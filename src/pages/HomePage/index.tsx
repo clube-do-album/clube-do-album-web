@@ -3,7 +3,7 @@ import type { CSSProperties, PointerEvent } from 'react';
 import { useMemo, useRef, useState } from 'react';
 import { AlbumPoster } from '../../features/albums/components/AlbumPoster';
 import { RankedPoster } from '../../features/rankings/components/RankedPoster';
-import { mergeAlbumDetails, rankingToAlbumPage, searchAlbumToPage, formatRating } from '../../features/albums/services/albumMappers';
+import { mergeAlbumDetails, rankingToAlbumPage, formatRating } from '../../features/albums/services/albumMappers';
 import type { AlbumDetails, AlbumPage, Ranking, SearchAlbum, SubmitHandler } from '../../types';
 
 type HomeScreenProps = {
@@ -17,7 +17,7 @@ type HomeScreenProps = {
   onQueryChange: (value: string) => void;
   onSearch: SubmitHandler;
   onOpenAlbum: (album: AlbumPage) => void;
-  onImportAlbum: (album: SearchAlbum) => void;
+  onOpenSearchAlbum: (album: SearchAlbum) => void;
 };
 
 export function HomeScreen({
@@ -31,7 +31,7 @@ export function HomeScreen({
   onQueryChange,
   onSearch,
   onOpenAlbum,
-  onImportAlbum,
+  onOpenSearchAlbum,
 }: HomeScreenProps) {
   const [albumPage, setAlbumPage] = useState(1);
   const [catalogFilter, setCatalogFilter] = useState('');
@@ -138,7 +138,7 @@ export function HomeScreen({
       <article className="search-panel glass-panel">
         <div className="section-heading search-heading">
           <div>
-            <span className="eyebrow">Spotify</span>
+            <span className="eyebrow">Descoberta</span>
             <h2>Descobrir albuns</h2>
           </div>
           <Search size={20} />
@@ -161,9 +161,9 @@ export function HomeScreen({
               artist={album.artistName ?? 'Artista'}
               imageUrl={album.imageUrl}
               meta={album.releaseDate ?? `${album.totalTracks ?? 0} faixas`}
-              actionLabel="Importar"
-              onOpen={() => onOpenAlbum(searchAlbumToPage(album))}
-              onAction={() => onImportAlbum(album)}
+              actionLabel="Ver album"
+              onOpen={() => onOpenSearchAlbum(album)}
+              onAction={() => onOpenSearchAlbum(album)}
             />
           ))}
         </div>
@@ -197,7 +197,7 @@ export function HomeScreen({
       <article className={`hero-panel ${heroAlbum?.imageUrl ? 'has-cover' : ''}`} style={heroStyle}>
         <div>
           <p className="eyebrow">Em alta na plataforma</p>
-          <h2>{heroAlbum?.title ?? 'Busque e importe seu primeiro album.'}</h2>
+          <h2>{heroAlbum?.title ?? 'Busque seu primeiro album.'}</h2>
           <p>{heroAlbum?.artist ?? 'Depois de avaliar, o ranking e o feed começam a ganhar vida.'}</p>
           {heroAlbum && (
             <button className="button primary" onClick={() => onOpenAlbum(heroAlbum)}>
@@ -234,7 +234,7 @@ export function HomeScreen({
             <AlbumPoster
               key={album.id}
               title={album.albumName ?? album.name ?? 'Album'}
-              artist={album.artistName ?? album.artists?.map((artist) => artist.name).join(', ') ?? 'Album importado'}
+              artist={album.artistName ?? album.artists?.map((artist) => artist.name).join(', ') ?? 'Artista nao informado'}
               imageUrl={album.imageUrl}
               meta={album.releaseDate ?? `${album.totalTracks ?? 0} faixas`}
               actionLabel="Ver album"

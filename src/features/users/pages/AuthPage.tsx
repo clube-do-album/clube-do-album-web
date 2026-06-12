@@ -35,7 +35,7 @@ export function AuthScreen({
         <div className="auth-stats">
           <span>Ranking vivo</span>
           <span>Feed social</span>
-          <span>Catalogo Spotify</span>
+          <span>Catalogo musical</span>
         </div>
       </section>
 

@@ -51,7 +51,7 @@ export function AlbumScreen({
         <div className="album-main-row">
           <AlbumCover className="album-cover-large" imageUrl={album.imageUrl} title={album.title} />
           <div className="album-info">
-            <p className="eyebrow">{album.position ? `#${album.position} no ranking` : canRate ? 'Album importado' : 'Spotify'}</p>
+            <p className="eyebrow">{album.position ? `#${album.position} no ranking` : canRate ? 'Disponivel na plataforma' : 'Preparando album'}</p>
             <h2>{album.title}</h2>
             <p className="album-artist">{album.releaseDate ? `${album.releaseDate.slice(0, 4)} • ` : ''}{album.artist}</p>
             <div className="album-meta-line">
@@ -65,17 +65,17 @@ export function AlbumScreen({
               </span>
             </div>
             <div className={`album-state ${canRate ? 'ready' : 'pending'}`}>
-              <strong>{canRate ? 'Pronto para avaliar' : 'Album ainda nao importado'}</strong>
+              <strong>{canRate ? 'Pronto para avaliar' : 'Preparando para avaliacao'}</strong>
               <span>
                 {canRate
-                  ? 'Este album ja esta salvo no catalogo da plataforma.'
-                  : 'Importe o album para liberar sua avaliacao e entrar no ranking.'}
+                  ? 'Este album ja esta disponivel no catalogo da plataforma.'
+                  : 'Vamos preparar este album para liberar sua avaliacao e entrar no ranking.'}
               </span>
             </div>
             <div className="album-actions">
               {!canRate && (
                 <button className="button secondary" onClick={onImport} disabled={loading || !album.spotifyId}>
-                  Importar para avaliar
+                  Preparar avaliacao
                 </button>
               )}
             </div>

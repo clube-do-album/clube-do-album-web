@@ -69,7 +69,7 @@ type AppRoutesProps = {
   onQueryChange: (value: string) => void;
   onSearchAlbums: SubmitHandler;
   onOpenAlbum: (album: AlbumPage) => void;
-  onImportAlbum: (album: SearchAlbum) => void;
+  onOpenSearchAlbum: (album: SearchAlbum) => void;
   onResolveAlbum: (album: AlbumPage | null) => void;
   onLoadAlbumDetails: (albumId: string) => Promise<AlbumDetails>;
   onImportSelectedAlbum: () => void;
@@ -152,7 +152,7 @@ export function AppRoutes(props: AppRoutesProps) {
               onQueryChange={props.onQueryChange}
               onSearch={props.onSearchAlbums}
               onOpenAlbum={props.onOpenAlbum}
-              onImportAlbum={props.onImportAlbum}
+              onOpenSearchAlbum={props.onOpenSearchAlbum}
             />
           }
         />

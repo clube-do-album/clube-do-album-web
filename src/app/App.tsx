@@ -22,7 +22,7 @@ export default function App() {
   const [authName, setAuthName] = useState('');
   const [authEmail, setAuthEmail] = useState('');
   const [authPassword, setAuthPassword] = useState('');
-  const [query, setQuery] = useState('abbey road');
+  const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchAlbum[]>([]);
   const [catalogAlbums, setCatalogAlbums] = useState<AlbumDetails[]>([]);
   const [ranking, setRanking] = useState<Ranking[]>([]);
@@ -85,6 +85,8 @@ export default function App() {
     }
 
     if (pathname === '/') {
+      setQuery('');
+      setSearchResults([]);
       void refreshPublicData();
       return;
     }
@@ -100,12 +102,33 @@ export default function App() {
     }
 
     if (pathname === '/profile') {
+      setProfileLookupId('');
+      setUserSearchResults([]);
       void loadMyRatings();
       void loadSocialData();
+      return;
     }
-  }, [session?.accessToken]);
 
-  usePageRevalidation(location.pathname, Boolean(session), revalidateCurrentPage);
+    if (pathname === '/people') {
+      setPeopleQuery('');
+      setPeopleResults([]);
+      void loadSocialData();
+      return;
+    }
+
+    if (pathname.startsWith('/album/') && selectedAlbum?.albumId) {
+      void loadAlbumDetails(selectedAlbum.albumId);
+      void loadAlbumReviews(selectedAlbum.albumId);
+      return;
+    }
+
+    if (pathname.startsWith('/profile/users/') && viewedUser?.id) {
+      void loadPublicUserRatings(viewedUser.id);
+      void loadSocialData();
+    }
+  }, [session?.accessToken, selectedAlbum?.albumId, viewedUser?.id]);
+
+  usePageRevalidation(location.pathname, location.key, Boolean(session), revalidateCurrentPage);
 
   async function loadCatalogAlbums() {
     const result = await listAlbums();
@@ -324,7 +347,7 @@ export default function App() {
     const spotifyId = album.spotifyId;
 
     if (!spotifyId) {
-      setStatus('Album sem Spotify ID.');
+      setStatus('Nao foi possivel localizar este album.');
       return null;
     }
 
@@ -334,11 +357,11 @@ export default function App() {
     try {
       const imported = await importAlbumFromSpotify(spotifyId, session.accessToken);
       setAlbumDetails((current) => ({ ...current, [imported.id]: imported }));
-      setStatus('Album importado.');
-      await loadRanking();
+      setStatus('Album pronto.');
+      await Promise.allSettled([loadRanking(), loadCatalogAlbums()]);
       return imported;
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Nao foi possivel importar.');
+      setStatus(error instanceof Error ? error.message : 'Nao foi possivel abrir este album.');
       return null;
     } finally {
       setLoading(false);
@@ -552,7 +575,7 @@ export default function App() {
       onQueryChange={setQuery}
       onSearchAlbums={searchAlbums}
       onOpenAlbum={openAlbum}
-      onImportAlbum={(album) => void importAndOpen(album)}
+      onOpenSearchAlbum={(album) => void importAndOpen(album)}
       onResolveAlbum={setSelectedAlbum}
       onLoadAlbumDetails={loadAlbumDetails}
       onImportSelectedAlbum={() => void ensureSelectedAlbumIsImported()}
