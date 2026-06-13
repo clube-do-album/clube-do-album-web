@@ -41,7 +41,6 @@ export function UserProfileScreen({
         <div className="public-profile-main">
           <span className="eyebrow">Perfil publico</span>
           <h2>{user.name}</h2>
-          <p>{user.email}</p>
           <div className="public-profile-meta">
             <span>{ratings.length} album(ns) avaliados</span>
             <span>{isOwnProfile ? 'Seu perfil' : isFollowing ? 'Voce segue este perfil' : 'Perfil disponivel para seguir'}</span>

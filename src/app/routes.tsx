@@ -97,6 +97,8 @@ type AppRoutesProps = {
 };
 
 export function AppRoutes(props: AppRoutesProps) {
+  const location = useLocation();
+
   if (!props.session) {
     return (
       <Routes>
@@ -127,6 +129,21 @@ export function AppRoutes(props: AppRoutesProps) {
   const heroAlbum = props.topAlbums[0]
     ? rankingToAlbumPage(props.topAlbums[0], props.albumDetails[props.topAlbums[0].albumId])
     : null;
+  const homeElement = (
+    <HomeScreen
+      heroAlbum={heroAlbum}
+      query={props.query}
+      loading={props.loading}
+      searchResults={props.searchResults}
+      topAlbums={props.topAlbums}
+      catalogAlbums={props.catalogAlbums}
+      albumDetails={props.albumDetails}
+      onQueryChange={props.onQueryChange}
+      onSearch={props.onSearchAlbums}
+      onOpenAlbum={props.onOpenAlbum}
+      onOpenSearchAlbum={props.onOpenSearchAlbum}
+    />
+  );
 
   return (
     <MainLayout
@@ -136,26 +153,10 @@ export function AppRoutes(props: AppRoutesProps) {
       onLoadProfile={props.onLoadMyRatings}
       onDismissStatus={props.onDismissStatus}
     >
+      {location.pathname === '/' ? homeElement : (
       <Routes>
         <Route path="/login" element={<Navigate to="/" replace />} />
-        <Route
-          path="/"
-          element={
-            <HomeScreen
-              heroAlbum={heroAlbum}
-              query={props.query}
-              loading={props.loading}
-              searchResults={props.searchResults}
-              topAlbums={props.topAlbums}
-              catalogAlbums={props.catalogAlbums}
-              albumDetails={props.albumDetails}
-              onQueryChange={props.onQueryChange}
-              onSearch={props.onSearchAlbums}
-              onOpenAlbum={props.onOpenAlbum}
-              onOpenSearchAlbum={props.onOpenSearchAlbum}
-            />
-          }
-        />
+        <Route path="/" element={homeElement} />
         <Route
           path="/album/:albumId"
           element={
@@ -252,6 +253,7 @@ export function AppRoutes(props: AppRoutesProps) {
         <Route path="/profile/edit" element={<EditProfileScreen session={props.session} onBack={props.onBackToProfile} />} />
         <Route path="*" element={<NotFoundPage />} />
       </Routes>
+      )}
     </MainLayout>
   );
 }

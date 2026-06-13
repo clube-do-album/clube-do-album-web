@@ -17,7 +17,7 @@ export function RatedAlbumList({ ratings, albumDetails, emptyText, onOpenRatedAl
       {ratings.map((item) => {
         const details = albumDetails[item.albumId];
         const title = details?.albumName ?? details?.name ?? 'Album carregando';
-        const artist = details?.artistName ?? 'Artista nao informado';
+        const artist = details?.artistName ?? details?.artists?.map((artistItem) => artistItem.name).join(', ') ?? 'Artista nao informado';
 
         return (
           <button className="rating-item rating-album-card" key={item.id} onClick={() => onOpenRatedAlbum(item)}>

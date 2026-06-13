@@ -41,20 +41,24 @@ export function HomeScreen({
   const dragStartX = useRef(0);
   const dragStartScrollLeft = useRef(0);
   const albumsPerPage = 12;
+  const safeCatalogAlbums = useMemo(() => Array.isArray(catalogAlbums) ? catalogAlbums : [], [catalogAlbums]);
+  const safeSearchResults = useMemo(() => Array.isArray(searchResults) ? searchResults : [], [searchResults]);
+  const safeTopAlbums = useMemo(() => Array.isArray(topAlbums) ? topAlbums : [], [topAlbums]);
   const filteredCatalogAlbums = useMemo(() => {
     const filter = catalogFilter.trim().toLowerCase();
 
     if (!filter) {
-      return catalogAlbums;
+      return safeCatalogAlbums;
     }
 
-    return catalogAlbums.filter((album) => {
+    return safeCatalogAlbums.filter((album) => {
       const albumName = `${album.albumName ?? ''} ${album.name ?? ''}`.toLowerCase();
-      const artistName = `${album.artistName ?? ''} ${album.artists?.map((artist) => artist.name).join(' ') ?? ''}`.toLowerCase();
+      const artists = Array.isArray(album.artists) ? album.artists : [];
+      const artistName = `${album.artistName ?? ''} ${artists.map((artist) => artist.name).join(' ')}`.toLowerCase();
 
       return albumName.includes(filter) || artistName.includes(filter);
     });
-  }, [catalogAlbums, catalogFilter]);
+  }, [safeCatalogAlbums, catalogFilter]);
   const totalPages = Math.max(1, Math.ceil(filteredCatalogAlbums.length / albumsPerPage));
   const paginatedAlbums = useMemo(
     () => filteredCatalogAlbums.slice((albumPage - 1) * albumsPerPage, albumPage * albumsPerPage),
@@ -64,8 +68,19 @@ export function HomeScreen({
     ? ({ '--hero-image': `url("${heroAlbum.imageUrl}")` } as CSSProperties)
     : undefined;
 
+  function getAlbumArtistName(album: AlbumDetails) {
+    const artists = Array.isArray(album.artists) ? album.artists : [];
+    const artistsName = artists.map((artist) => artist.name).join(', ');
+
+    if (album.artistName) {
+      return album.artistName;
+    }
+
+    return artistsName || 'Artista nao informado';
+  }
+
   function openCatalogAlbum(album: AlbumDetails) {
-    const artistName = album.artistName ?? album.artists?.map((artist) => artist.name).join(', ') ?? 'Artista nao informado';
+    const artistName = getAlbumArtistName(album);
 
     onOpenAlbum(mergeAlbumDetails({
       albumId: album.id,
@@ -133,8 +148,16 @@ export function HomeScreen({
     onOpenAlbum(rankingToAlbumPage(item, albumDetails[item.albumId]));
   }
 
+  function renderEmptyState(message: string) {
+    return (
+      <div className="home-empty-state">
+        <span>{message}</span>
+      </div>
+    );
+  }
+
   return (
-    <section className="screen-grid">
+    <section className="screen-grid home-screen">
       <article className="search-panel glass-panel">
         <div className="section-heading search-heading">
           <div>
@@ -154,7 +177,7 @@ export function HomeScreen({
           </button>
         </form>
         <div className="poster-grid compact search-results-grid">
-          {searchResults.slice(0, 8).map((album) => (
+          {safeSearchResults.slice(0, 8).map((album) => (
             <AlbumPoster
               key={album.spotifyId ?? album.id ?? album.name}
               title={album.albumName ?? album.name ?? 'Album'}
@@ -167,6 +190,7 @@ export function HomeScreen({
             />
           ))}
         </div>
+        {safeSearchResults.length === 0 && query.trim() && renderEmptyState('Nenhum resultado carregado para essa busca.')}
       </article>
 
       <article className="wide-panel glass-panel">
@@ -183,14 +207,16 @@ export function HomeScreen({
           onPointerMove={moveCarouselDrag}
           onPointerUp={stopCarouselDrag}
         >
-          {topAlbums.map((item) => (
-            <RankedPoster
-              key={item.albumId}
-              item={item}
-              details={albumDetails[item.albumId]}
-              onOpen={() => openRankedAlbum(item)}
-            />
-          ))}
+          {safeTopAlbums.length > 0
+            ? safeTopAlbums.map((item) => (
+                <RankedPoster
+                  key={item.albumId}
+                  item={item}
+                  details={albumDetails[item.albumId]}
+                  onOpen={() => openRankedAlbum(item)}
+                />
+              ))
+            : renderEmptyState('Os destaques aparecem aqui quando houver albuns avaliados.')}
         </div>
       </article>
 
@@ -230,22 +256,21 @@ export function HomeScreen({
           </label>
         </div>
         <div className="poster-grid catalog-grid">
-          {paginatedAlbums.map((album) => (
-            <AlbumPoster
-              key={album.id}
-              title={album.albumName ?? album.name ?? 'Album'}
-              artist={album.artistName ?? album.artists?.map((artist) => artist.name).join(', ') ?? 'Artista nao informado'}
-              imageUrl={album.imageUrl}
-              meta={album.releaseDate ?? `${album.totalTracks ?? 0} faixas`}
-              actionLabel="Ver album"
-              onOpen={() => openCatalogAlbum(album)}
-              onAction={() => openCatalogAlbum(album)}
-            />
-          ))}
+          {paginatedAlbums.length > 0
+            ? paginatedAlbums.map((album) => (
+                <AlbumPoster
+                  key={album.id}
+                  title={album.albumName ?? album.name ?? 'Album'}
+                  artist={getAlbumArtistName(album)}
+                  imageUrl={album.imageUrl}
+                  meta={album.releaseDate ?? `${album.totalTracks ?? 0} faixas`}
+                  actionLabel="Ver album"
+                  onOpen={() => openCatalogAlbum(album)}
+                  onAction={() => openCatalogAlbum(album)}
+                />
+              ))
+            : renderEmptyState('Nenhum album importado encontrado.')}
         </div>
-        {paginatedAlbums.length === 0 && (
-          <p className="muted-text">Nenhum album encontrado para esse filtro.</p>
-        )}
         <div className="pagination-bar">
           <button className="button ghost" onClick={() => setAlbumPage((page) => Math.max(1, page - 1))} disabled={albumPage === 1}>
             <ChevronLeft size={16} />

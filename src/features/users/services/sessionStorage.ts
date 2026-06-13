@@ -10,7 +10,14 @@ export function readSession(): Session | null {
   }
 
   try {
-    return JSON.parse(stored) as Session;
+    const session = JSON.parse(stored) as Session;
+
+    if (!isValidSession(session)) {
+      localStorage.removeItem(sessionKey);
+      return null;
+    }
+
+    return session;
   } catch {
     localStorage.removeItem(sessionKey);
     return null;
@@ -23,4 +30,13 @@ export function saveStoredSession(session: Session) {
 
 export function clearStoredSession() {
   localStorage.removeItem(sessionKey);
+}
+
+function isValidSession(session: Session | null | undefined): session is Session {
+  return Boolean(
+    session?.accessToken &&
+      session.user?.id &&
+      session.user?.name &&
+      session.user?.email,
+  );
 }

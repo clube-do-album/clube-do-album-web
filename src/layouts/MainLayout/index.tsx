@@ -15,6 +15,7 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const userInitial = session.user.name?.slice(0, 1).toUpperCase() || 'C';
 
   function closeMenu() {
     setIsMenuOpen(false);
@@ -59,7 +60,7 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
         </nav>
         <div className="drawer-divider" />
         <div className="drawer-user">
-          <span>{session.user.name.slice(0, 1).toUpperCase()}</span>
+          <span>{userInitial}</span>
           <strong>{session.user.name}</strong>
           <small>{session.user.email}</small>
         </div>
@@ -88,7 +89,7 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
           <div className="topbar-actions">
             <span className="page-kicker">{routeTitle(location.pathname)}</span>
             <button className="avatar-button" onClick={() => navigate('/profile')}>
-              <span>{session.user.name.slice(0, 1).toUpperCase()}</span>
+              <span>{userInitial}</span>
               {session.user.name}
             </button>
           </div>

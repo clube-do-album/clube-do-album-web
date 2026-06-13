@@ -44,17 +44,20 @@ export default function App() {
   const [viewedUser, setViewedUser] = useState<User | null>(null);
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
+  const [hasLoadedHome, setHasLoadedHome] = useState(false);
 
-  const topAlbums = useMemo(() => ranking.slice(0, 12), [ranking]);
+  const topAlbums = useMemo(() => (Array.isArray(ranking) ? ranking : []).slice(0, 12), [ranking]);
 
   useEffect(() => {
     if (session) {
       cacheUsers([session.user]);
-      void refreshPublicData();
+      if (!hasLoadedHome) {
+        void refreshPublicData();
+      }
       void loadMyRatings(session);
       void loadSocialData(session);
     }
-  }, [session]);
+  }, [session, hasLoadedHome]);
 
   useEffect(() => {
     if (!selectedAlbum?.albumId) {
@@ -77,6 +80,7 @@ export default function App() {
 
   async function refreshPublicData() {
     await Promise.allSettled([loadRanking(), loadFeed(), loadCatalogAlbums()]);
+    setHasLoadedHome(true);
   }
 
   const revalidateCurrentPage = useCallback((pathname: string) => {
@@ -85,9 +89,9 @@ export default function App() {
     }
 
     if (pathname === '/') {
-      setQuery('');
-      setSearchResults([]);
-      void refreshPublicData();
+      if (!hasLoadedHome) {
+        void refreshPublicData();
+      }
       return;
     }
 
@@ -126,13 +130,13 @@ export default function App() {
       void loadPublicUserRatings(viewedUser.id);
       void loadSocialData();
     }
-  }, [session?.accessToken, selectedAlbum?.albumId, viewedUser?.id]);
+  }, [hasLoadedHome, session?.accessToken, selectedAlbum?.albumId, viewedUser?.id]);
 
   usePageRevalidation(location.pathname, location.key, Boolean(session), revalidateCurrentPage);
 
   async function loadCatalogAlbums() {
     const result = await listAlbums();
-    setCatalogAlbums(result);
+    setCatalogAlbums(Array.isArray(result) ? result : []);
   }
 
   function saveSession(nextSession: Session) {
@@ -181,12 +185,15 @@ export default function App() {
 
   async function loadRanking() {
     const result = await listRankings(24);
-    setRanking(result);
-    await hydrateRankingAlbums(result);
+    const safeResult = Array.isArray(result) ? result : [];
+    setRanking(safeResult);
+    await hydrateRankingAlbums(safeResult);
   }
 
   async function hydrateRankingAlbums(items: Ranking[]) {
-    const missing = items.filter((item) => !albumDetails[item.albumId]).slice(0, 12);
+    const missing = (Array.isArray(items) ? items : [])
+      .filter((item) => item?.albumId && !albumDetails[item.albumId])
+      .slice(0, 12);
 
     if (missing.length === 0) {
       return;
@@ -209,7 +216,7 @@ export default function App() {
 
   async function loadFeed() {
     const result = await listFeed(24);
-    setFeed(result);
+    setFeed(Array.isArray(result) ? result : []);
   }
 
   async function loadMyRatings(currentSession = session) {
@@ -219,8 +226,9 @@ export default function App() {
 
     try {
       const result = await listRatingsByUser(currentSession.user.id, currentSession.accessToken);
-      setMyRatings(result);
-      await hydrateRatingAlbums(result);
+      const safeResult = Array.isArray(result) ? result : [];
+      setMyRatings(safeResult);
+      await hydrateRatingAlbums(safeResult);
     } catch {
       setMyRatings([]);
     }
@@ -229,8 +237,9 @@ export default function App() {
   async function loadAlbumReviews(albumId: string) {
     try {
       const result = await listRatingsByAlbum(albumId);
-      setAlbumReviews(result);
-      await hydrateReviewUsers(result);
+      const safeResult = Array.isArray(result) ? result : [];
+      setAlbumReviews(safeResult);
+      await hydrateReviewUsers(safeResult);
     } catch {
       setAlbumReviews([]);
     }
@@ -239,15 +248,16 @@ export default function App() {
   async function loadPublicUserRatings(userId: string) {
     try {
       const result = await listPublicRatingsByUser(userId);
-      setPublicUserRatings(result);
-      await hydrateRatingAlbums(result);
+      const safeResult = Array.isArray(result) ? result : [];
+      setPublicUserRatings(safeResult);
+      await hydrateRatingAlbums(safeResult);
     } catch {
       setPublicUserRatings([]);
     }
   }
 
   async function hydrateRatingAlbums(items: Rating[]) {
-    const missingAlbumIds = Array.from(new Set(items.map((item) => item.albumId)))
+    const missingAlbumIds = Array.from(new Set((Array.isArray(items) ? items : []).map((item) => item.albumId)))
       .filter((albumId) => !albumDetails[albumId])
       .slice(0, 16);
 
@@ -277,7 +287,7 @@ export default function App() {
       return;
     }
 
-    const missingUserIds = Array.from(new Set(items.map((item) => item.userId)))
+    const missingUserIds = Array.from(new Set((Array.isArray(items) ? items : []).map((item) => item.userId)))
       .filter((userId) => userId !== session.user.id && !userCache[userId])
       .slice(0, 12);
 
@@ -306,10 +316,12 @@ export default function App() {
         listFollowing(currentSession.accessToken),
         listFollowers(currentSession.accessToken),
       ]);
+      const safeFollowing = Array.isArray(followingResult) ? followingResult : [];
+      const safeFollowers = Array.isArray(followersResult) ? followersResult : [];
 
-      setFollowing(followingResult);
-      setFollowers(followersResult);
-      await hydrateSocialUsers(followingResult, followersResult, currentSession);
+      setFollowing(safeFollowing);
+      setFollowers(safeFollowers);
+      await hydrateSocialUsers(safeFollowing, safeFollowers, currentSession);
     } catch {
       setFollowing([]);
       setFollowers([]);
@@ -323,8 +335,9 @@ export default function App() {
 
     try {
       const result = await searchAlbumsByName(query);
-      setSearchResults(result);
-      setStatus(`${result.length} resultado(s).`);
+      const safeResult = Array.isArray(result) ? result : [];
+      setSearchResults(safeResult);
+      setStatus(`${safeResult.length} resultado(s).`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Nao foi possivel buscar albuns.');
     } finally {
@@ -427,8 +440,9 @@ export default function App() {
 
     try {
       const result = await searchUsersByQuery(profileLookupId.trim(), session.accessToken);
-      const visibleResults = result.filter((user) => user.id !== session.user.id);
-      cacheUsers(result);
+      const safeResult = Array.isArray(result) ? result : [];
+      const visibleResults = safeResult.filter((user) => user.id !== session.user.id);
+      cacheUsers(safeResult);
       setUserSearchResults(visibleResults);
       setStatus(`${visibleResults.length} usuario(s) encontrado(s).`);
     } catch (error) {
@@ -450,9 +464,10 @@ export default function App() {
 
     try {
       const result = await searchUsersByQuery(peopleQuery.trim(), session.accessToken);
-      cacheUsers(result);
-      setPeopleResults(result);
-      setStatus(`${result.length} perfil(is) encontrado(s).`);
+      const safeResult = Array.isArray(result) ? result : [];
+      cacheUsers(safeResult);
+      setPeopleResults(safeResult);
+      setStatus(`${safeResult.length} perfil(is) encontrado(s).`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Nao foi possivel buscar pessoas.');
     } finally {
@@ -625,8 +640,8 @@ export default function App() {
   ) {
     const ids = new Set<string>();
 
-    followingItems.forEach((item) => ids.add(item.followedId));
-    followerItems.forEach((item) => ids.add(item.followerId));
+    (Array.isArray(followingItems) ? followingItems : []).forEach((item) => ids.add(item.followedId));
+    (Array.isArray(followerItems) ? followerItems : []).forEach((item) => ids.add(item.followerId));
     ids.delete(currentSession.user.id);
 
     const missingIds = Array.from(ids).filter((id) => !userCache[id]);

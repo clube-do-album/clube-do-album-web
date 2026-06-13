@@ -162,7 +162,6 @@ export function AlbumScreen({
                         <strong>{authorName}</strong>
                         <span>{formatRating(review.rating ?? review.ratingValue)} estrelas</span>
                       </div>
-                      {author?.email && <small>{author.email}</small>}
                       <p>{review.review}</p>
                     </article>
                   );

@@ -37,7 +37,7 @@ export function PeopleScreen({
 
       <form className="search-row" onSubmit={onSearch}>
         <input
-          placeholder="Buscar por nome ou e-mail"
+          placeholder="Buscar por nome"
           value={query}
           onChange={(event) => onQueryChange(event.target.value)}
         />
@@ -56,7 +56,6 @@ export function PeopleScreen({
               <button className="person-main" onClick={() => onOpenUserProfile(user)}>
                 <span>{user.name.slice(0, 1).toUpperCase()}</span>
                 <strong>{user.name}</strong>
-                <small>{user.email}</small>
               </button>
 
               {!isOwnUser && (

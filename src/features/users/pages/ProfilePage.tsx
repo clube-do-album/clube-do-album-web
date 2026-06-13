@@ -85,7 +85,7 @@ export function ProfileScreen({
         </div>
         <form className="search-row" onSubmit={onSearchUsers}>
           <input
-            placeholder="Buscar por nome ou e-mail"
+            placeholder="Buscar por nome"
             value={profileLookupId}
             onChange={(event) => onProfileLookupChange(event.target.value)}
           />
@@ -96,7 +96,6 @@ export function ProfileScreen({
             <button className="user-result" key={user.id} onClick={() => onOpenUserProfile(user)}>
               <span>{user.name.slice(0, 1).toUpperCase()}</span>
               <strong>{user.name}</strong>
-              <small>{user.email}</small>
             </button>
           ))}
         </div>
@@ -166,7 +165,6 @@ function SocialList({
             <UserRound size={16} />
             <span>
               <strong>{user?.name ?? userId}</strong>
-              {user?.email && <small>{user.email}</small>}
             </span>
           </button>
         );
