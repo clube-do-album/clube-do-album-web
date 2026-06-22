@@ -1,6 +1,7 @@
 import { Activity, BarChart3, ChevronRight, Home, LogOut, Menu, Search, UsersRound, UserRound, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import albumDiscLogo from '../../assets/clubepng.png';
 import type { ChildrenProps, Session } from '../../types';
 
 type MainLayoutProps = ChildrenProps & {
@@ -31,7 +32,7 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
               closeMenu();
             }}
           >
-            <span className="brand-disc" aria-hidden="true" />
+            <img className="brand-disc" src={albumDiscLogo} alt="" aria-hidden="true" />
             Clube do Album
           </button>
           <button className="drawer-close" onClick={closeMenu} aria-label="Fechar menu">
@@ -76,7 +77,7 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
               <Menu size={20} />
             </button>
             <button className="topbar-brand" onClick={() => navigate('/')}>
-              <span className="brand-disc" aria-hidden="true" />
+              <img className="brand-disc" src={albumDiscLogo} alt="" aria-hidden="true" />
               <strong>Clube do Album</strong>
             </button>
             <nav className="topbar-nav" aria-label="Navegacao principal">

@@ -28,6 +28,7 @@ export function rankingToAlbumPage(item: Ranking, details?: AlbumDetails): Album
     imageUrl: details?.imageUrl,
     releaseDate: details?.releaseDate,
     totalTracks: details?.totalTracks,
+    tracks: details?.tracks,
     position: item.position,
     averageRating: item.averageRating,
     totalRatings: item.totalRatings,
@@ -44,6 +45,7 @@ export function mergeAlbumDetails(album: AlbumPage, details: AlbumDetails): Albu
     imageUrl: details.imageUrl ?? album.imageUrl,
     releaseDate: details.releaseDate ?? album.releaseDate,
     totalTracks: details.totalTracks ?? album.totalTracks,
+    tracks: details.tracks ?? album.tracks,
   };
 }
 

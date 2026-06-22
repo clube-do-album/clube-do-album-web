@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, MessageSquareText, Music2, Sparkles, Star, UsersRound, X } from 'lucide-react';
+import { ArrowLeft, CalendarDays, Clock3, MessageSquareText, Music2, Sparkles, Star, UsersRound, X } from 'lucide-react';
 import { useState, type CSSProperties, type FormEvent } from 'react';
 import { AlbumCover } from '../../../components/common/AlbumCover';
 import { formatRating } from '../services/albumMappers';
@@ -42,6 +42,18 @@ function getReviewInitial(name: string) {
   return name.trim().slice(0, 1).toUpperCase() || 'U';
 }
 
+function formatTrackDuration(durationMs?: number) {
+  if (!durationMs || durationMs <= 0) {
+    return '--:--';
+  }
+
+  const totalSeconds = Math.round(durationMs / 1000);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = String(totalSeconds % 60).padStart(2, '0');
+
+  return `${minutes}:${seconds}`;
+}
+
 export function AlbumScreen({
   album,
   currentUserId,
@@ -65,6 +77,7 @@ export function AlbumScreen({
   const ratingCount = album.totalRatings ?? reviews.length;
   const reviewCount = visibleReviews.length;
   const averageRating = formatRating(album.averageRating);
+  const tracks = [...(album.tracks ?? [])].sort((first, second) => (first.trackNumber ?? 0) - (second.trackNumber ?? 0));
   const distributionRows = [5, 4, 3, 2, 1].map((stars) => {
     const count = reviews.filter((review) => Math.ceil(review.rating ?? review.ratingValue ?? 0) === stars).length;
     const width = reviews.length > 0 ? Math.max(3, Math.round((count / reviews.length) * 100)) : 0;
@@ -143,6 +156,40 @@ export function AlbumScreen({
               Avaliar album
             </button>
           </aside>
+        </div>
+        <div className="album-tracks-panel">
+          <div className="album-tracks-title">
+            <div>
+              <strong>Faixas</strong>
+            </div>
+            <span>
+              <Clock3 size={14} />
+              {tracks.length || album.totalTracks || 0}
+            </span>
+          </div>
+          {tracks.length > 0 ? (
+            <ol className="album-track-list">
+              {tracks.map((track, index) => (
+                <li className="album-track-row" key={track.id ?? track.spotifyId ?? `${track.name}-${index}`}>
+                  <span className="album-track-number">{track.trackNumber ?? index + 1}</span>
+                  <div className="album-track-main">
+                    <strong>{track.name}</strong>
+                    <small>
+                      {album.artist}
+                      {track.explicit && <em>E</em>}
+                    </small>
+                  </div>
+                  <span className="album-track-duration">{formatTrackDuration(track.durationMs)}</span>
+                </li>
+              ))}
+            </ol>
+          ) : (
+            <div className="album-empty-review album-tracks-empty">
+              <Music2 size={18} />
+              <p>As faixas deste album ainda nao foram carregadas.</p>
+              <span>Quando o album for importado com detalhes completos, elas aparecem aqui.</span>
+            </div>
+          )}
         </div>
           <div className="reviews-panel">
             <div className="reviews-title">

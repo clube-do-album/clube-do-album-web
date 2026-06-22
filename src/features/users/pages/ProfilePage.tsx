@@ -1,4 +1,5 @@
 import { Disc3, Edit3, MessageSquareText, RefreshCw, Star, UserRound, UserRoundPlus } from 'lucide-react';
+import { useEffect } from 'react';
 import { RatedAlbumList } from '../../albums/components/RatedAlbumList';
 import type { AlbumDetails, Follow, Rating, Session, SubmitHandler, User } from '../../../types';
 
@@ -44,39 +45,61 @@ export function ProfileScreen({
     ? myRatings.reduce((total, rating) => total + (rating.rating ?? rating.ratingValue ?? 0), 0) / myRatings.length
     : 0;
 
+  useEffect(() => {
+    onRefreshRatings();
+    onRefreshSocial();
+  }, []);
+
   return (
     <section className="profile-grid">
-      <article className="profile-card glass-panel">
-        <div className="profile-avatar"><UserRound size={34} /></div>
-        <h2>{session.user.name}</h2>
-        <p>{session.user.email}</p>
-        <div className="social-stats">
-          <span>
-            <strong>{myRatings.length}</strong>
-            albuns
-          </span>
-          <span>
-            <strong>{reviewCount}</strong>
-            reviews
-          </span>
-          <span>
-            <strong>{averageRating ? averageRating.toFixed(1) : '-'}</strong>
-            media
-          </span>
-          <span>
-            <strong>{followers.length}</strong>
-            seguidores
-          </span>
-        </div>
-        <div className="profile-actions">
-          <button className="button primary" onClick={onEditProfile}>
-            <Edit3 size={18} />
-            Editar perfil
-          </button>
-        </div>
-      </article>
+      <div className="profile-sidebar-column">
+        <article className="profile-card glass-panel">
+          <span className="eyebrow">Meu perfil</span>
+          <div className="profile-avatar"><UserRound size={34} /></div>
+          <h2>{session.user.name}</h2>
+          <p>{session.user.email}</p>
+          <div className="social-stats">
+            <span><strong>{myRatings.length}</strong> albuns</span>
+            <span><strong>{reviewCount}</strong> reviews</span>
+            <span><strong>{averageRating ? averageRating.toFixed(1) : '-'}</strong> media</span>
+            <span><strong>{followers.length}</strong> seguidores</span>
+          </div>
+          <div className="profile-actions">
+            <button className="button primary" onClick={onEditProfile}>
+              <Edit3 size={18} />
+              Editar perfil
+            </button>
+          </div>
+        </article>
 
-      <article className="content-card glass-panel">
+        <article className="content-card glass-panel profile-discovery-card">
+          <div className="section-heading">
+            <div>
+              <span className="eyebrow">Comunidade</span>
+              <h2>Encontrar pessoa</h2>
+            </div>
+            <UserRoundPlus size={20} />
+          </div>
+          <form className="search-row" onSubmit={onSearchUsers}>
+            <input
+              placeholder="Buscar por nome"
+              value={profileLookupId}
+              onChange={(event) => onProfileLookupChange(event.target.value)}
+            />
+            <button className="button primary" disabled={loading}>Buscar</button>
+          </form>
+          <div className="user-result-list">
+            {userSearchResults.map((user) => (
+              <button className="user-result" key={user.id} onClick={() => onOpenUserProfile(user)}>
+                <span>{user.name.slice(0, 1).toUpperCase()}</span>
+                <strong>{user.name}</strong>
+              </button>
+            ))}
+          </div>
+        </article>
+      </div>
+
+      <article className="content-card glass-panel profile-ratings-card">
         <div className="section-heading">
           <div>
             <span className="eyebrow">Historico</span>
@@ -91,37 +114,12 @@ export function ProfileScreen({
           ratings={myRatings}
           albumDetails={albumDetails}
           emptyText="Voce ainda nao avaliou nenhum album."
+          limit={8}
           onOpenRatedAlbum={onOpenRatedAlbum}
         />
       </article>
 
-      <article className="content-card glass-panel">
-        <div className="section-heading">
-          <div>
-            <span className="eyebrow">Comunidade</span>
-            <h2>Encontrar pessoa</h2>
-          </div>
-          <UserRoundPlus size={20} />
-        </div>
-        <form className="search-row" onSubmit={onSearchUsers}>
-          <input
-            placeholder="Buscar por nome"
-            value={profileLookupId}
-            onChange={(event) => onProfileLookupChange(event.target.value)}
-          />
-          <button className="button primary" disabled={loading}>Buscar</button>
-        </form>
-        <div className="user-result-list">
-          {userSearchResults.map((user) => (
-            <button className="user-result" key={user.id} onClick={() => onOpenUserProfile(user)}>
-              <span>{user.name.slice(0, 1).toUpperCase()}</span>
-              <strong>{user.name}</strong>
-            </button>
-          ))}
-        </div>
-      </article>
-
-      <article className="content-card glass-panel">
+      <article className="content-card glass-panel profile-network-card">
         <div className="section-heading">
           <div>
             <span className="eyebrow">Conexoes</span>

@@ -1,4 +1,4 @@
-import { Disc3, RefreshCw, Star, UserRoundPlus } from 'lucide-react';
+import { Disc3, RefreshCw, Star } from 'lucide-react';
 import { AlbumCover } from '../../../components/common/AlbumCover';
 import { getAlbumArtistName } from '../../albums/services/albumMappers';
 import type { AlbumDetails, AlbumPage, FeedItem, User } from '../../../types';
@@ -13,7 +13,7 @@ type FeedScreenProps = {
 };
 
 export function FeedScreen({ feed, albumDetails, userCache, onRefresh, onOpenAlbum, onOpenUserProfile }: FeedScreenProps) {
-  const safeFeed = Array.isArray(feed) ? feed : [];
+  const safeFeed = (Array.isArray(feed) ? feed : []).filter((item) => getFeedType(item) !== 'USER_FOLLOWED');
 
   return (
     <section className="content-card glass-panel feed-screen">
@@ -31,71 +31,59 @@ export function FeedScreen({ feed, albumDetails, userCache, onRefresh, onOpenAlb
       <div className="feed-list">
         {safeFeed.length > 0 ? (
           safeFeed.map((item) => {
-            const type = getFeedType(item);
             const actor = userCache[item.userId];
-            const targetUser = item.targetUserId ? userCache[item.targetUserId] : undefined;
             const details = item.albumId ? albumDetails[item.albumId] : undefined;
             const albumTitle = details?.albumName ?? details?.name ?? item.albumName ?? 'Album avaliado';
             const artistName = details ? getAlbumArtistName(details) : item.artistName ?? 'Artista nao informado';
-            const isRating = type !== 'USER_FOLLOWED';
 
             return (
-              <article className={`feed-post ${isRating ? 'rating-event' : 'social-event'}`} key={item.id}>
-                {isRating ? (
-                  <div className="feed-post-rating-layout">
-                    <button
-                      className="feed-cover-button"
-                      onClick={() => details && onOpenAlbum(toAlbumPage(details, item))}
-                      disabled={!details}
-                      aria-label={`Abrir ${albumTitle}`}
-                    >
-                      <AlbumCover imageUrl={details?.imageUrl} title={albumTitle} className="feed-post-cover" />
+              <article className="feed-post rating-event" key={item.id}>
+                <header className="feed-post-user">
+                  <button className="feed-user-avatar" onClick={() => actor && onOpenUserProfile(actor)} disabled={!actor}>
+                    {(actor?.name ?? 'U').slice(0, 1).toUpperCase()}
+                  </button>
+                  <p className="feed-post-title">
+                    <button className="feed-text-button" onClick={() => actor && onOpenUserProfile(actor)} disabled={!actor}>
+                      {actor?.name ?? shortId(item.userId)}
+                    </button>{' '}
+                    avaliou{' '}
+                    <button className="feed-text-button" onClick={() => details && onOpenAlbum(toAlbumPage(details, item))} disabled={!details}>
+                      {albumTitle}
                     </button>
+                  </p>
+                  <time>{formatFeedDate(item.occurredAt ?? item.createdAt)}</time>
+                </header>
 
-                    <div className="feed-post-body">
-                      <p className="feed-post-title">
-                        <button className="feed-text-button" onClick={() => actor && onOpenUserProfile(actor)} disabled={!actor}>
-                          {actor?.name ?? shortId(item.userId)}
-                        </button>{' '}
-                        avaliou{' '}
-                        <button className="feed-text-button" onClick={() => details && onOpenAlbum(toAlbumPage(details, item))} disabled={!details}>
-                          {albumTitle}
-                        </button>{' '}
-                        de {artistName}
-                      </p>
+                <div className="feed-post-rating-layout">
+                  <button
+                    className="feed-cover-button"
+                    onClick={() => details && onOpenAlbum(toAlbumPage(details, item))}
+                    disabled={!details}
+                    aria-label={`Abrir ${albumTitle}`}
+                  >
+                    <AlbumCover imageUrl={details?.imageUrl} title={albumTitle} className="feed-post-cover" />
+                  </button>
 
-                      <div className="feed-post-review">
-                        <p>{item.review?.trim() || item.message || 'Sem review escrita.'}</p>
-                      </div>
-
-                      <footer className="feed-post-footer">
-                        {typeof item.rating === 'number' && (
-                          <span className="feed-rating">
-                            <Star size={14} />
-                            {item.rating.toFixed(1).replace('.0', '')}
-                          </span>
-                        )}
-                        <time>{formatFeedDate(item.occurredAt ?? item.createdAt)}</time>
-                      </footer>
+                  <div className="feed-post-body">
+                    <div className="feed-album-line">
+                      <strong>{albumTitle}</strong>
+                      <small>{artistName}</small>
                     </div>
-                  </div>
-                ) : (
-                  <>
-                    <p className="feed-post-title social-title">
-                      <UserRoundPlus size={16} />
-                      <button className="feed-text-button" onClick={() => actor && onOpenUserProfile(actor)} disabled={!actor}>
-                        {actor?.name ?? shortId(item.userId)}
-                      </button>{' '}
-                      comecou a seguir{' '}
-                      <button className="feed-text-button" onClick={() => targetUser && onOpenUserProfile(targetUser)} disabled={!targetUser}>
-                        {targetUser?.name ?? shortId(item.targetUserId)}
-                      </button>
-                    </p>
+
+                    <div className="feed-post-review">
+                      <p>{item.review?.trim() || item.message || 'Sem review escrita.'}</p>
+                    </div>
+
                     <footer className="feed-post-footer">
-                      <time>{formatFeedDate(item.occurredAt ?? item.createdAt)}</time>
+                      {typeof item.rating === 'number' && (
+                        <span className="feed-rating">
+                          <Star size={14} />
+                          {item.rating.toFixed(1).replace('.0', '')}
+                        </span>
+                      )}
                     </footer>
-                  </>
-                )}
+                  </div>
+                </div>
               </article>
             );
           })
@@ -103,7 +91,7 @@ export function FeedScreen({ feed, albumDetails, userCache, onRefresh, onOpenAlb
           <div className="feed-empty-state">
             <Disc3 size={18} />
             <strong>Nenhuma atividade ainda.</strong>
-            <p>Avaliacoes e novos vinculos sociais aparecem aqui quando a comunidade se movimenta.</p>
+            <p>Avaliacoes e reviews aparecem aqui quando a comunidade se movimenta.</p>
           </div>
         )}
       </div>

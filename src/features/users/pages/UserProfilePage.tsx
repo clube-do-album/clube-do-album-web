@@ -1,4 +1,4 @@
-import { ArrowLeft, MessageSquareText, Star, UserRound, UserRoundCheck, UserRoundPlus } from 'lucide-react';
+import { ArrowLeft, Disc3, MessageSquareText, Star, UserRound, UserRoundCheck, UserRoundPlus } from 'lucide-react';
 import { RatedAlbumList } from '../../albums/components/RatedAlbumList';
 import type { AlbumDetails, Rating, Session, User } from '../../../types';
 
@@ -45,11 +45,12 @@ export function UserProfileScreen({
         <div className="public-profile-main">
           <span className="eyebrow">Perfil publico</span>
           <h2>{user.name}</h2>
+          <p>{isOwnProfile ? 'Este e o seu perfil publico.' : isFollowing ? 'Voce acompanha as avaliacoes deste perfil.' : 'Acompanhe este perfil para ver novas avaliacoes no feed.'}</p>
           <div className="public-profile-meta">
-            <span><Star size={14} /> {ratings.length} album(ns)</span>
-            <span><MessageSquareText size={14} /> {reviewCount} review(s)</span>
-            <span>{averageRating ? averageRating.toFixed(1) : '-'} media</span>
-            <span>{isOwnProfile ? 'Seu perfil' : isFollowing ? 'Voce segue este perfil' : 'Perfil disponivel para seguir'}</span>
+            <span><Disc3 size={14} /> <strong>{ratings.length}</strong> albuns</span>
+            <span><MessageSquareText size={14} /> <strong>{reviewCount}</strong> reviews</span>
+            <span><Star size={14} /> <strong>{averageRating ? averageRating.toFixed(1) : '-'}</strong> media</span>
+            <span>{isOwnProfile ? 'Seu perfil' : isFollowing ? 'Seguindo' : 'Nao seguindo'}</span>
           </div>
         </div>
 
@@ -76,6 +77,7 @@ export function UserProfileScreen({
           ratings={ratings}
           albumDetails={albumDetails}
           emptyText="Este usuario ainda nao avaliou nenhum album."
+          limit={8}
           onOpenRatedAlbum={onOpenRatedAlbum}
         />
       </article>

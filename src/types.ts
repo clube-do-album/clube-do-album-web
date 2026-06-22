@@ -39,6 +39,16 @@ export type AlbumDetails = {
     spotifyId?: string;
     name: string;
   }>;
+  tracks?: AlbumTrack[];
+};
+
+export type AlbumTrack = {
+  id?: string;
+  spotifyId?: string;
+  name: string;
+  trackNumber?: number;
+  durationMs?: number;
+  explicit?: boolean;
 };
 
 export type Ranking = {
@@ -97,6 +107,7 @@ export type AlbumPage = {
   position?: number;
   averageRating?: number;
   totalRatings?: number;
+  tracks?: AlbumTrack[];
 };
 
 export type ApiError = {
