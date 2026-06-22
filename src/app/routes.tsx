@@ -188,7 +188,19 @@ export function AppRoutes(props: AppRoutesProps) {
             />
           }
         />
-        <Route path="/feed" element={<FeedScreen feed={props.feed} onRefresh={props.onRefreshFeed} />} />
+        <Route
+          path="/feed"
+          element={
+            <FeedScreen
+              feed={props.feed}
+              albumDetails={props.albumDetails}
+              userCache={props.userCache}
+              onRefresh={props.onRefreshFeed}
+              onOpenAlbum={props.onOpenAlbum}
+              onOpenUserProfile={props.onOpenUserProfile}
+            />
+          }
+        />
         <Route
           path="/people"
           element={

@@ -35,7 +35,7 @@ export default function App() {
   const [followers, setFollowers] = useState<Follow[]>([]);
   const [userCache, setUserCache] = useState<Record<string, User>>({});
   const [selectedAlbum, setSelectedAlbum] = useState<AlbumPage | null>(null);
-  const [ratingValue, setRatingValue] = useState(4.5);
+  const [ratingValue, setRatingValue] = useState(0);
   const [reviewText, setReviewText] = useState('');
   const [profileLookupId, setProfileLookupId] = useState('');
   const [userSearchResults, setUserSearchResults] = useState<User[]>([]);
@@ -68,10 +68,10 @@ export default function App() {
 
     const currentRating = myRatings.find((rating) => rating.albumId === selectedAlbum.albumId);
     if (currentRating) {
-      setRatingValue(currentRating.rating ?? currentRating.ratingValue ?? 4.5);
+      setRatingValue(currentRating.rating ?? currentRating.ratingValue ?? 0);
       setReviewText(currentRating.review ?? '');
     } else {
-      setRatingValue(4.5);
+      setRatingValue(0);
       setReviewText('');
     }
 
@@ -216,7 +216,76 @@ export default function App() {
 
   async function loadFeed() {
     const result = await listFeed(24);
-    setFeed(Array.isArray(result) ? result : []);
+    const safeResult = (Array.isArray(result) ? result : []).sort((a, b) => {
+      const firstDate = new Date(a.occurredAt ?? a.createdAt ?? 0).getTime();
+      const secondDate = new Date(b.occurredAt ?? b.createdAt ?? 0).getTime();
+      return secondDate - firstDate;
+    });
+    setFeed(safeResult);
+    await Promise.allSettled([hydrateFeedAlbums(safeResult), hydrateFeedUsers(safeResult)]);
+  }
+
+  async function hydrateFeedAlbums(items: FeedItem[]) {
+    const missingAlbumIds = Array.from(new Set(
+      (Array.isArray(items) ? items : [])
+        .map((item) => item.albumId)
+        .filter((albumId): albumId is string => Boolean(albumId)),
+    ))
+      .filter((albumId) => !albumDetails[albumId])
+      .slice(0, 18);
+
+    if (missingAlbumIds.length === 0) {
+      return;
+    }
+
+    const loaded = await Promise.allSettled(
+      missingAlbumIds.map((albumId) => getAlbumById(albumId)),
+    );
+
+    setAlbumDetails((current) => {
+      const next = { ...current };
+
+      loaded.forEach((result) => {
+        if (result.status === 'fulfilled') {
+          next[result.value.id] = result.value;
+        }
+      });
+
+      return next;
+    });
+  }
+
+  async function hydrateFeedUsers(items: FeedItem[]) {
+    if (!session) {
+      return;
+    }
+
+    const ids = new Set<string>();
+
+    (Array.isArray(items) ? items : []).forEach((item) => {
+      ids.add(item.userId);
+      if (item.targetUserId) {
+        ids.add(item.targetUserId);
+      }
+    });
+
+    const missingUserIds = Array.from(ids)
+      .filter((userId) => !userCache[userId])
+      .slice(0, 18);
+
+    if (missingUserIds.length === 0) {
+      return;
+    }
+
+    const loaded = await Promise.allSettled(
+      missingUserIds.map((userId) => fetchUserById(userId, session.accessToken)),
+    );
+
+    const users = loaded
+      .filter((result): result is PromiseFulfilledResult<User> => result.status === 'fulfilled')
+      .map((result) => result.value);
+
+    cacheUsers(users);
   }
 
   async function loadMyRatings(currentSession = session) {

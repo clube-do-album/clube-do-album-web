@@ -72,6 +72,7 @@ export type FeedItem = {
   albumName?: string;
   artistName?: string;
   rating?: number;
+  review?: string;
   message?: string;
   eventType?: string;
   occurredAt?: string;

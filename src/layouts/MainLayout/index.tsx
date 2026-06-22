@@ -1,4 +1,4 @@
-import { Activity, BarChart3, Home, LogOut, Menu, Search, UsersRound, UserRound, X } from 'lucide-react';
+import { Activity, BarChart3, ChevronRight, Home, LogOut, Menu, Search, UsersRound, UserRound, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import type { ChildrenProps, Session } from '../../types';
@@ -15,7 +15,6 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const userInitial = session.user.name?.slice(0, 1).toUpperCase() || 'C';
 
   function closeMenu() {
     setIsMenuOpen(false);
@@ -60,7 +59,7 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
         </nav>
         <div className="drawer-divider" />
         <div className="drawer-user">
-          <span>{userInitial}</span>
+          <UserRound size={18} />
           <strong>{session.user.name}</strong>
           <small>{session.user.email}</small>
         </div>
@@ -89,8 +88,9 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
           <div className="topbar-actions">
             <span className="page-kicker">{routeTitle(location.pathname)}</span>
             <button className="avatar-button" onClick={() => navigate('/profile')}>
-              <span>{userInitial}</span>
+              <UserRound size={15} />
               {session.user.name}
+              <ChevronRight size={14} />
             </button>
           </div>
         </header>

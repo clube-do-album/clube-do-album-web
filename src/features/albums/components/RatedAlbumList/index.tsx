@@ -1,6 +1,6 @@
-import { Disc3, Star } from 'lucide-react';
+import { CalendarDays, Disc3, Star } from 'lucide-react';
 import { AlbumCover } from '../../../../components/common/AlbumCover';
-import { formatRating } from '../../services/albumMappers';
+import { formatRating, getAlbumArtistName } from '../../services/albumMappers';
 import type { AlbumDetails, Rating } from '../../../../types';
 
 type RatedAlbumListProps = {
@@ -17,7 +17,8 @@ export function RatedAlbumList({ ratings, albumDetails, emptyText, onOpenRatedAl
       {ratings.map((item) => {
         const details = albumDetails[item.albumId];
         const title = details?.albumName ?? details?.name ?? 'Album carregando';
-        const artist = details?.artistName ?? details?.artists?.map((artistItem) => artistItem.name).join(', ') ?? 'Artista nao informado';
+        const artist = details ? getAlbumArtistName(details) : 'Artista carregando';
+        const date = formatRatingDate(item.updatedAt ?? item.createdAt);
 
         return (
           <button className="rating-item rating-album-card" key={item.id} onClick={() => onOpenRatedAlbum(item)}>
@@ -26,6 +27,12 @@ export function RatedAlbumList({ ratings, albumDetails, emptyText, onOpenRatedAl
               <strong>{title}</strong>
               <small>{artist}</small>
               {item.review && <em>{item.review}</em>}
+              {date && (
+                <small className="rating-date">
+                  <CalendarDays size={13} />
+                  {date}
+                </small>
+              )}
             </span>
             <b>
               <Star size={16} />
@@ -37,4 +44,21 @@ export function RatedAlbumList({ ratings, albumDetails, emptyText, onOpenRatedAl
       })}
     </div>
   );
+}
+
+function formatRatingDate(value?: string) {
+  if (!value) {
+    return '';
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    dateStyle: 'short',
+    timeStyle: 'short',
+  }).format(date);
 }

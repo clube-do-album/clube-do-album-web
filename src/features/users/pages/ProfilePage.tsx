@@ -1,4 +1,4 @@
-import { Edit3, RefreshCw, UserRound, UserRoundPlus } from 'lucide-react';
+import { Disc3, Edit3, MessageSquareText, RefreshCw, Star, UserRound, UserRoundPlus } from 'lucide-react';
 import { RatedAlbumList } from '../../albums/components/RatedAlbumList';
 import type { AlbumDetails, Follow, Rating, Session, SubmitHandler, User } from '../../../types';
 
@@ -39,16 +39,29 @@ export function ProfileScreen({
   onOpenRatedAlbum,
   onOpenUserProfile,
 }: ProfileScreenProps) {
+  const reviewCount = myRatings.filter((rating) => rating.review?.trim()).length;
+  const averageRating = myRatings.length > 0
+    ? myRatings.reduce((total, rating) => total + (rating.rating ?? rating.ratingValue ?? 0), 0) / myRatings.length
+    : 0;
+
   return (
     <section className="profile-grid">
       <article className="profile-card glass-panel">
-        <div className="profile-avatar">{session.user.name.slice(0, 1).toUpperCase()}</div>
+        <div className="profile-avatar"><UserRound size={34} /></div>
         <h2>{session.user.name}</h2>
         <p>{session.user.email}</p>
         <div className="social-stats">
           <span>
-            <strong>{following.length}</strong>
-            seguindo
+            <strong>{myRatings.length}</strong>
+            albuns
+          </span>
+          <span>
+            <strong>{reviewCount}</strong>
+            reviews
+          </span>
+          <span>
+            <strong>{averageRating ? averageRating.toFixed(1) : '-'}</strong>
+            media
           </span>
           <span>
             <strong>{followers.length}</strong>
@@ -65,8 +78,12 @@ export function ProfileScreen({
 
       <article className="content-card glass-panel">
         <div className="section-heading">
-          <h2>Albuns rankeados</h2>
+          <div>
+            <span className="eyebrow">Historico</span>
+            <h2>Reviews e notas</h2>
+          </div>
           <button className="button ghost" onClick={onRefreshRatings}>
+            <RefreshCw size={16} />
             Atualizar
           </button>
         </div>
@@ -80,7 +97,10 @@ export function ProfileScreen({
 
       <article className="content-card glass-panel">
         <div className="section-heading">
-          <h2>Encontrar pessoa</h2>
+          <div>
+            <span className="eyebrow">Comunidade</span>
+            <h2>Encontrar pessoa</h2>
+          </div>
           <UserRoundPlus size={20} />
         </div>
         <form className="search-row" onSubmit={onSearchUsers}>
@@ -103,13 +123,21 @@ export function ProfileScreen({
 
       <article className="content-card glass-panel">
         <div className="section-heading">
-          <h2>Rede social</h2>
+          <div>
+            <span className="eyebrow">Conexoes</span>
+            <h2>Rede social</h2>
+          </div>
           <button className="button ghost" onClick={onRefreshSocial}>
             <RefreshCw size={16} />
             Atualizar
           </button>
         </div>
         <div className="social-columns">
+          <div className="profile-summary-strip">
+            <span><Disc3 size={14} /> {following.length} seguindo</span>
+            <span><Star size={14} /> {followers.length} seguidores</span>
+            <span><MessageSquareText size={14} /> {reviewCount} reviews</span>
+          </div>
           <SocialList
             title="Seguindo"
             emptyText="Voce ainda nao segue ninguem."
