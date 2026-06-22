@@ -31,7 +31,7 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
               closeMenu();
             }}
           >
-            <span>CA</span>
+            <span className="brand-disc" aria-hidden="true" />
             Clube do Album
           </button>
           <button className="drawer-close" onClick={closeMenu} aria-label="Fechar menu">
@@ -76,6 +76,7 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
               <Menu size={20} />
             </button>
             <button className="topbar-brand" onClick={() => navigate('/')}>
+              <span className="brand-disc" aria-hidden="true" />
               <strong>Clube do Album</strong>
             </button>
             <nav className="topbar-nav" aria-label="Navegacao principal">

@@ -1,4 +1,4 @@
-import { ArrowLeft, CalendarDays, Disc3, ListMusic, MessageSquareText, Sparkles, Star, UsersRound, X } from 'lucide-react';
+import { ArrowLeft, CalendarDays, MessageSquareText, Music2, Sparkles, Star, UsersRound, X } from 'lucide-react';
 import { useState, type CSSProperties, type FormEvent } from 'react';
 import { AlbumCover } from '../../../components/common/AlbumCover';
 import { formatRating } from '../services/albumMappers';
@@ -65,11 +65,11 @@ export function AlbumScreen({
   const ratingCount = album.totalRatings ?? reviews.length;
   const reviewCount = visibleReviews.length;
   const averageRating = formatRating(album.averageRating);
-  const reviewDistribution = ratingOptions.map((option) => {
-    const count = reviews.filter((review) => (review.rating ?? review.ratingValue) === option).length;
-    const height = reviews.length > 0 ? Math.max(8, Math.round((count / reviews.length) * 42)) : 8;
+  const distributionRows = [5, 4, 3, 2, 1].map((stars) => {
+    const count = reviews.filter((review) => Math.ceil(review.rating ?? review.ratingValue ?? 0) === stars).length;
+    const width = reviews.length > 0 ? Math.max(3, Math.round((count / reviews.length) * 100)) : 0;
 
-    return { option, count, height };
+    return { stars, count, width };
   });
   const albumStyle = album.imageUrl
     ? ({ '--album-backdrop': `url("${album.imageUrl}")` } as CSSProperties)
@@ -85,6 +85,7 @@ export function AlbumScreen({
       <div className={`album-detail ${album.imageUrl ? 'has-backdrop' : ''}`} style={albumStyle}>
         <button className="album-back-icon" onClick={onBack} aria-label="Voltar">
           <ArrowLeft size={18} />
+          <span>Voltar</span>
         </button>
         <div className="album-main-row">
           <AlbumCover className="album-cover-large" imageUrl={album.imageUrl} title={album.title} />
@@ -98,7 +99,7 @@ export function AlbumScreen({
                 {album.releaseDate ?? 'Lancamento nao informado'}
               </span>
               <span>
-                <ListMusic size={15} />
+                <Music2 size={15} />
                 {album.totalTracks ? `${album.totalTracks} faixas` : 'Faixas nao informadas'}
               </span>
             </div>
@@ -118,22 +119,23 @@ export function AlbumScreen({
                 media
               </span>
               <span>
-                <Disc3 size={16} />
+                <UsersRound size={16} />
                 <strong>{ratingCount}</strong>
                 avaliacoes
               </span>
             </div>
             <div className="rating-snapshot" aria-label="Distribuicao de notas">
-              <div className="rating-bars">
-                {reviewDistribution.map((item) => (
-                  <span key={item.option} title={`${item.option} estrela(s): ${item.count}`}>
-                    <i style={{ height: `${item.height}px` }} />
-                  </span>
+              <span className="rating-snapshot-title">Distribuicao das avaliacoes</span>
+              <div className="rating-distribution-list">
+                {distributionRows.map((item) => (
+                  <div className="rating-distribution-row" key={item.stars}>
+                    <span>{item.stars} <Star size={10} /></span>
+                    <i>
+                      <b style={{ width: `${item.width}%` }} />
+                    </i>
+                    <em>{item.count}</em>
+                  </div>
                 ))}
-              </div>
-              <div className="rating-snapshot-footer">
-                <span>{reviewCount} review(s)</span>
-                <span>{reviews.length} nota(s) carregada(s)</span>
               </div>
             </div>
             <button className="button primary album-rate-trigger" onClick={() => setIsRatingModalOpen(true)} disabled={!canRate || loading}>
