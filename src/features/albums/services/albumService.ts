@@ -1,12 +1,31 @@
 import { apiRequest } from '../../../services/api/apiClient';
-import type { AlbumDetails, SearchAlbum } from '../../../types';
+import type { AlbumDetails, PaginatedResponse, SearchAlbum } from '../../../types';
 
-export function listAlbums() {
-  return apiRequest<AlbumDetails[]>('/albums');
+export function listAlbums({ page = 1, limit = 24, query = '' } = {}) {
+  const params = new URLSearchParams({
+    page: String(page),
+    limit: String(limit),
+  });
+
+  if (query.trim()) {
+    params.set('query', query.trim());
+  }
+
+  return apiRequest<PaginatedResponse<AlbumDetails> | AlbumDetails[]>(`/albums?${params.toString()}`);
 }
 
 export function getAlbumById(albumId: string) {
   return apiRequest<AlbumDetails>(`/albums/${albumId}`);
+}
+
+export function getAlbumsByIds(albumIds: string[]) {
+  const ids = Array.from(new Set(albumIds.filter(Boolean))).slice(0, 50);
+
+  if (ids.length === 0) {
+    return Promise.resolve([]);
+  }
+
+  return apiRequest<AlbumDetails[]>(`/albums?ids=${encodeURIComponent(ids.join(','))}`);
 }
 
 export function searchAlbumsByName(query: string) {

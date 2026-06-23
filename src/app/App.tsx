@@ -2,16 +2,16 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AppRoutes } from './routes';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
-import { getAlbumById, importAlbumFromSpotify, listAlbums, searchAlbumsByName } from '../features/albums/services/albumService';
-import { listPublicRatingsByUser, listRatingsByAlbum, listRatingsByUser, saveRating } from '../features/albums/services/ratingService';
+import { getAlbumById, getAlbumsByIds, importAlbumFromSpotify, listAlbums, searchAlbumsByName } from '../features/albums/services/albumService';
+import { getRatingSummaryByUser, listPublicRatingsByUser, listRatingsByAlbum, listRatingsByUser, saveRating } from '../features/albums/services/ratingService';
 import { listRankings } from '../features/rankings/services/rankingService';
 import { followUserById, listFeed, listFollowers, listFollowing, unfollowUserById } from '../features/social/services/socialService';
 import { readSession, saveStoredSession, clearStoredSession } from '../features/users/services/sessionStorage';
-import { createUser, getUserById as fetchUserById, login, searchUsersByQuery } from '../features/users/services/userService';
+import { createUser, getUserById as fetchUserById, getUsersByIds, login, searchUsersByQuery } from '../features/users/services/userService';
 import { mergeAlbumDetails, searchAlbumToPage } from '../features/albums/services/albumMappers';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { usePageRevalidation } from '../hooks/usePageRevalidation';
-import type { AlbumDetails, AlbumPage, AuthMode, FeedItem, Follow, Rating, Ranking, SearchAlbum, Session, User } from '../types';
+import type { AlbumDetails, AlbumPage, AuthMode, FeedItem, Follow, PaginatedResponse, Rating, Ranking, SearchAlbum, Session, User, UserRatingSummary } from '../types';
 
 export default function App() {
   const navigate = useNavigate();
@@ -25,14 +25,25 @@ export default function App() {
   const [query, setQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchAlbum[]>([]);
   const [catalogAlbums, setCatalogAlbums] = useState<AlbumDetails[]>([]);
+  const [catalogPage, setCatalogPage] = useState(1);
+  const [catalogFilter, setCatalogFilter] = useState('');
+  const [catalogTotal, setCatalogTotal] = useState(0);
+  const [catalogTotalPages, setCatalogTotalPages] = useState(1);
   const [ranking, setRanking] = useState<Ranking[]>([]);
   const [albumDetails, setAlbumDetails] = useState<Record<string, AlbumDetails>>({});
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [myRatings, setMyRatings] = useState<Rating[]>([]);
+  const [myRatingSummary, setMyRatingSummary] = useState<UserRatingSummary>({
+    totalRatings: 0,
+    reviewCount: 0,
+    averageRating: 0,
+  });
   const [albumReviews, setAlbumReviews] = useState<Rating[]>([]);
   const [publicUserRatings, setPublicUserRatings] = useState<Rating[]>([]);
   const [following, setFollowing] = useState<Follow[]>([]);
   const [followers, setFollowers] = useState<Follow[]>([]);
+  const [followingTotal, setFollowingTotal] = useState(0);
+  const [followersTotal, setFollowersTotal] = useState(0);
   const [userCache, setUserCache] = useState<Record<string, User>>({});
   const [selectedAlbum, setSelectedAlbum] = useState<AlbumPage | null>(null);
   const [ratingValue, setRatingValue] = useState(0);
@@ -51,13 +62,8 @@ export default function App() {
   useEffect(() => {
     if (session) {
       cacheUsers([session.user]);
-      if (!hasLoadedHome) {
-        void refreshPublicData();
-      }
-      void loadMyRatings(session);
-      void loadSocialData(session);
     }
-  }, [session, hasLoadedHome]);
+  }, [session]);
 
   useEffect(() => {
     if (!selectedAlbum?.albumId) {
@@ -108,8 +114,7 @@ export default function App() {
     if (pathname === '/profile') {
       setProfileLookupId('');
       setUserSearchResults([]);
-      void loadMyRatings();
-      void loadSocialData();
+      void loadProfileData();
       return;
     }
 
@@ -134,9 +139,23 @@ export default function App() {
 
   usePageRevalidation(location.pathname, location.key, Boolean(session), revalidateCurrentPage);
 
-  async function loadCatalogAlbums() {
-    const result = await listAlbums();
-    setCatalogAlbums(Array.isArray(result) ? result : []);
+  useEffect(() => {
+    if (session && hasLoadedHome) {
+      const timeoutId = window.setTimeout(() => {
+        void loadCatalogAlbums(catalogPage, catalogFilter);
+      }, 300);
+
+      return () => window.clearTimeout(timeoutId);
+    }
+  }, [catalogPage, catalogFilter, hasLoadedHome, session?.accessToken]);
+
+  async function loadCatalogAlbums(page = catalogPage, filter = catalogFilter) {
+    const result = await listAlbums({ page, limit: 12, query: filter });
+    const paginated = normalizePaginated(result, page, 12);
+
+    setCatalogAlbums(paginated.items);
+    setCatalogTotal(paginated.total);
+    setCatalogTotalPages(paginated.totalPages);
   }
 
   function saveSession(nextSession: Session) {
@@ -184,8 +203,8 @@ export default function App() {
   }
 
   async function loadRanking() {
-    const result = await listRankings(24);
-    const safeResult = Array.isArray(result) ? result : [];
+    const result = await listRankings({ page: 1, limit: 24 });
+    const safeResult = normalizePaginated(result, 1, 24).items;
     setRanking(safeResult);
     await hydrateRankingAlbums(safeResult);
   }
@@ -215,8 +234,8 @@ export default function App() {
   }
 
   async function loadFeed() {
-    const result = await listFeed(24);
-    const safeResult = (Array.isArray(result) ? result : []).sort((a, b) => {
+    const result = await listFeed({ page: 1, limit: 24, type: 'ALBUM_RATED' });
+    const safeResult = normalizePaginated(result, 1, 24).items.sort((a, b) => {
       const firstDate = new Date(a.occurredAt ?? a.createdAt ?? 0).getTime();
       const secondDate = new Date(b.occurredAt ?? b.createdAt ?? 0).getTime();
       return secondDate - firstDate;
@@ -238,17 +257,13 @@ export default function App() {
       return;
     }
 
-    const loaded = await Promise.allSettled(
-      missingAlbumIds.map((albumId) => getAlbumById(albumId)),
-    );
+    const loaded = await getAlbumsByIds(missingAlbumIds);
 
     setAlbumDetails((current) => {
       const next = { ...current };
 
-      loaded.forEach((result) => {
-        if (result.status === 'fulfilled') {
-          next[result.value.id] = result.value;
-        }
+      loaded.forEach((album) => {
+        next[album.id] = album;
       });
 
       return next;
@@ -294,19 +309,35 @@ export default function App() {
     }
 
     try {
-      const result = await listRatingsByUser(currentSession.user.id, currentSession.accessToken);
-      const safeResult = Array.isArray(result) ? result : [];
+      const [ratingsResult, summaryResult] = await Promise.all([
+        listRatingsByUser(currentSession.user.id, currentSession.accessToken, { page: 1, limit: 15 }),
+        getRatingSummaryByUser(currentSession.user.id, currentSession.accessToken),
+      ]);
+      const safeResult = normalizePaginated(ratingsResult, 1, 15).items;
       setMyRatings(safeResult);
+      setMyRatingSummary(summaryResult);
       await hydrateRatingAlbums(safeResult);
     } catch {
       setMyRatings([]);
+      setMyRatingSummary({ totalRatings: 0, reviewCount: 0, averageRating: 0 });
     }
+  }
+
+  async function loadProfileData(currentSession = session) {
+    if (!currentSession) {
+      return;
+    }
+
+    await Promise.allSettled([
+      loadMyRatings(currentSession),
+      loadSocialData(currentSession),
+    ]);
   }
 
   async function loadAlbumReviews(albumId: string) {
     try {
       const result = await listRatingsByAlbum(albumId);
-      const safeResult = Array.isArray(result) ? result : [];
+      const safeResult = normalizePaginated(result, 1, 20).items;
       setAlbumReviews(safeResult);
       await hydrateReviewUsers(safeResult);
     } catch {
@@ -317,7 +348,7 @@ export default function App() {
   async function loadPublicUserRatings(userId: string) {
     try {
       const result = await listPublicRatingsByUser(userId);
-      const safeResult = Array.isArray(result) ? result : [];
+      const safeResult = normalizePaginated(result, 1, 15).items;
       setPublicUserRatings(safeResult);
       await hydrateRatingAlbums(safeResult);
     } catch {
@@ -382,18 +413,24 @@ export default function App() {
 
     try {
       const [followingResult, followersResult] = await Promise.all([
-        listFollowing(currentSession.accessToken),
-        listFollowers(currentSession.accessToken),
+        listFollowing(currentSession.accessToken, { page: 1, limit: 8 }),
+        listFollowers(currentSession.accessToken, { page: 1, limit: 8 }),
       ]);
-      const safeFollowing = Array.isArray(followingResult) ? followingResult : [];
-      const safeFollowers = Array.isArray(followersResult) ? followersResult : [];
+      const paginatedFollowing = normalizePaginated(followingResult, 1, 8);
+      const paginatedFollowers = normalizePaginated(followersResult, 1, 8);
+      const safeFollowing = paginatedFollowing.items;
+      const safeFollowers = paginatedFollowers.items;
 
       setFollowing(safeFollowing);
       setFollowers(safeFollowers);
+      setFollowingTotal(paginatedFollowing.total);
+      setFollowersTotal(paginatedFollowers.total);
       await hydrateSocialUsers(safeFollowing, safeFollowers, currentSession);
     } catch {
       setFollowing([]);
       setFollowers([]);
+      setFollowingTotal(0);
+      setFollowersTotal(0);
     }
   }
 
@@ -414,10 +451,23 @@ export default function App() {
     }
   }
 
-  function openAlbum(album: AlbumPage) {
-    setSelectedAlbum(album);
-    navigate(`/album/${encodeURIComponent(album.albumId ?? album.spotifyId ?? album.title)}`, {
-      state: { album },
+  async function openAlbum(album: AlbumPage) {
+    const albumRouteId = album.albumId ?? album.spotifyId ?? album.title;
+    let nextAlbum = album;
+
+    if (album.albumId && !album.tracks) {
+      try {
+        const details = await getAlbumById(album.albumId);
+        setAlbumDetails((current) => ({ ...current, [details.id]: details }));
+        nextAlbum = mergeAlbumDetails(album, details);
+      } catch {
+        nextAlbum = album;
+      }
+    }
+
+    setSelectedAlbum(nextAlbum);
+    navigate(`/album/${encodeURIComponent(albumRouteId)}`, {
+      state: { album: nextAlbum },
     });
   }
 
@@ -631,6 +681,10 @@ export default function App() {
       searchResults={searchResults}
       topAlbums={topAlbums}
       catalogAlbums={catalogAlbums}
+      catalogPage={catalogPage}
+      catalogTotal={catalogTotal}
+      catalogTotalPages={catalogTotalPages}
+      catalogFilter={catalogFilter}
       albumDetails={albumDetails}
       selectedAlbum={selectedAlbum}
       albumReviews={albumReviews}
@@ -642,7 +696,10 @@ export default function App() {
       peopleResults={peopleResults}
       following={following}
       followers={followers}
+      followingTotal={followingTotal}
+      followersTotal={followersTotal}
       myRatings={myRatings}
+      myRatingSummary={myRatingSummary}
       userCache={userCache}
       profileLookupId={profileLookupId}
       userSearchResults={userSearchResults}
@@ -658,6 +715,11 @@ export default function App() {
       onLoadMyRatings={() => void loadMyRatings()}
       onQueryChange={setQuery}
       onSearchAlbums={searchAlbums}
+      onCatalogPageChange={setCatalogPage}
+      onCatalogFilterChange={(value) => {
+        setCatalogFilter(value);
+        setCatalogPage(1);
+      }}
       onOpenAlbum={openAlbum}
       onOpenSearchAlbum={(album) => void importAndOpen(album)}
       onResolveAlbum={setSelectedAlbum}
@@ -719,13 +781,7 @@ export default function App() {
       return;
     }
 
-    const loaded = await Promise.allSettled(
-      missingIds.map((id) => fetchUserById(id, currentSession.accessToken)),
-    );
-
-    const users = loaded
-      .filter((result): result is PromiseFulfilledResult<User> => result.status === 'fulfilled')
-      .map((result) => result.value);
+    const users = await getUsersByIds(missingIds, currentSession.accessToken);
 
     cacheUsers(users);
   }
@@ -745,4 +801,23 @@ export default function App() {
       return next;
     });
   }
+}
+
+function normalizePaginated<T>(
+  response: PaginatedResponse<T> | T[],
+  page: number,
+  limit: number,
+): PaginatedResponse<T> {
+  if (Array.isArray(response)) {
+    return {
+      items: response,
+      page,
+      limit,
+      total: response.length,
+      totalPages: Math.max(1, Math.ceil(response.length / limit)),
+      hasNextPage: false,
+    };
+  }
+
+  return response;
 }

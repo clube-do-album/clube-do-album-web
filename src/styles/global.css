@@ -1436,7 +1436,8 @@ label {
   overscroll-behavior-x: contain;
   padding: 2px 2px 12px;
   scroll-behavior: smooth;
-  scroll-snap-type: x mandatory;
+  scroll-padding-inline: 2px;
+  scroll-snap-type: x proximity;
   scrollbar-width: none;
   cursor: grab;
   touch-action: pan-y;

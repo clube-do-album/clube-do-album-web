@@ -27,6 +27,7 @@ import type {
   Session,
   SubmitHandler,
   User,
+  UserRatingSummary,
 } from '../types';
 
 type AppRoutesProps = {
@@ -41,6 +42,10 @@ type AppRoutesProps = {
   searchResults: SearchAlbum[];
   topAlbums: Ranking[];
   catalogAlbums: AlbumDetails[];
+  catalogPage: number;
+  catalogTotal: number;
+  catalogTotalPages: number;
+  catalogFilter: string;
   albumDetails: Record<string, AlbumDetails>;
   selectedAlbum: AlbumPage | null;
   albumReviews: Rating[];
@@ -52,7 +57,10 @@ type AppRoutesProps = {
   peopleResults: User[];
   following: Follow[];
   followers: Follow[];
+  followingTotal: number;
+  followersTotal: number;
   myRatings: Rating[];
+  myRatingSummary: UserRatingSummary;
   userCache: Record<string, User>;
   profileLookupId: string;
   userSearchResults: User[];
@@ -68,6 +76,8 @@ type AppRoutesProps = {
   onLoadMyRatings: () => void;
   onQueryChange: (value: string) => void;
   onSearchAlbums: SubmitHandler;
+  onCatalogPageChange: (page: number) => void;
+  onCatalogFilterChange: (value: string) => void;
   onOpenAlbum: (album: AlbumPage) => void;
   onOpenSearchAlbum: (album: SearchAlbum) => void;
   onResolveAlbum: (album: AlbumPage | null) => void;
@@ -137,9 +147,15 @@ export function AppRoutes(props: AppRoutesProps) {
       searchResults={props.searchResults}
       topAlbums={props.topAlbums}
       catalogAlbums={props.catalogAlbums}
+      catalogPage={props.catalogPage}
+      catalogTotal={props.catalogTotal}
+      catalogTotalPages={props.catalogTotalPages}
+      catalogFilter={props.catalogFilter}
       albumDetails={props.albumDetails}
       onQueryChange={props.onQueryChange}
       onSearch={props.onSearchAlbums}
+      onCatalogPageChange={props.onCatalogPageChange}
+      onCatalogFilterChange={props.onCatalogFilterChange}
       onOpenAlbum={props.onOpenAlbum}
       onOpenSearchAlbum={props.onOpenSearchAlbum}
     />
@@ -150,7 +166,6 @@ export function AppRoutes(props: AppRoutesProps) {
       session={props.session}
       status={props.status}
       onLogout={props.onLogout}
-      onLoadProfile={props.onLoadMyRatings}
       onDismissStatus={props.onDismissStatus}
     >
       {location.pathname === '/' ? homeElement : (
@@ -227,7 +242,10 @@ export function AppRoutes(props: AppRoutesProps) {
               albumDetails={props.albumDetails}
               following={props.following}
               followers={props.followers}
+              followingTotal={props.followingTotal}
+              followersTotal={props.followersTotal}
               userCache={props.userCache}
+              ratingSummary={props.myRatingSummary}
               profileLookupId={props.profileLookupId}
               userSearchResults={props.userSearchResults}
               loading={props.loading}
@@ -401,12 +419,21 @@ function AlbumRoute({
   const album = selectedAlbum ?? routeAlbum;
 
   useEffect(() => {
-    if (routeAlbum) {
+    const currentAlbum = album ?? routeAlbum;
+    const currentAlbumId = currentAlbum?.albumId ?? albumId;
+
+    if (routeAlbum && (!album || album.albumId !== routeAlbum.albumId)) {
       onResolveAlbum(routeAlbum);
+    }
+
+    if (currentAlbum && currentAlbumId && !currentAlbum.tracks) {
+      void onLoadAlbumDetails(currentAlbumId)
+        .then((details) => onResolveAlbum(mergeAlbumDetails(currentAlbum, details)))
+        .catch(() => undefined);
       return;
     }
 
-    if (!album && albumId) {
+    if (!currentAlbum && albumId) {
       void onLoadAlbumDetails(albumId)
         .then((details) =>
           onResolveAlbum(

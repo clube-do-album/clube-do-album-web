@@ -30,3 +30,13 @@ export function searchUsersByQuery(query: string, accessToken: string) {
 export function getUserById(userId: string, accessToken: string) {
   return apiRequest<User>(`/users/${userId}`, {}, accessToken);
 }
+
+export function getUsersByIds(userIds: string[], accessToken: string) {
+  const ids = Array.from(new Set(userIds.filter(Boolean))).slice(0, 50);
+
+  if (ids.length === 0) {
+    return Promise.resolve([]);
+  }
+
+  return apiRequest<User[]>(`/users?ids=${encodeURIComponent(ids.join(','))}`, {}, accessToken);
+}

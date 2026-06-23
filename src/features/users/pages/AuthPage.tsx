@@ -34,7 +34,7 @@ export function AuthScreen({
   return (
     <main className="auth-screen">
       <section className="auth-copy">
-        <p className="eyebrow">Clube do Album</p>
+        <p className="eyebrow">Clube do Álbum</p>
         <h1>Seu diario de albuns, notas e descobertas.</h1>
         <div className="auth-stats">
           <span>Ranking vivo</span>
@@ -46,10 +46,10 @@ export function AuthScreen({
       <section className="auth-card">
         <div className="auth-card-header">
           <p className="eyebrow">Bem-vindo</p>
-          <h2>{authMode === 'login' ? 'Entrar no Clube do Album' : 'Criar sua conta'}</h2>
+          <h2>{authMode === 'login' ? 'Entrar no Clube do Álbum' : 'Criar sua conta'}</h2>
           <span>
             {authMode === 'login'
-              ? 'Continue de onde parou e avalie seus proximos albuns.'
+              ? 'Continue de onde parou e avalie seus próximos álbuns.'
               : 'Monte seu perfil para salvar notas, reviews e seguir outros ouvintes.'}
           </span>
         </div>

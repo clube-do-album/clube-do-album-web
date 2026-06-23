@@ -1,14 +1,16 @@
 import { Disc3, Edit3, MessageSquareText, RefreshCw, Star, UserRound, UserRoundPlus } from 'lucide-react';
-import { useEffect } from 'react';
 import { RatedAlbumList } from '../../albums/components/RatedAlbumList';
-import type { AlbumDetails, Follow, Rating, Session, SubmitHandler, User } from '../../../types';
+import type { AlbumDetails, Follow, Rating, Session, SubmitHandler, User, UserRatingSummary } from '../../../types';
 
 type ProfileScreenProps = {
   session: Session;
   myRatings: Rating[];
+  ratingSummary: UserRatingSummary;
   albumDetails: Record<string, AlbumDetails>;
   following: Follow[];
   followers: Follow[];
+  followingTotal: number;
+  followersTotal: number;
   userCache: Record<string, User>;
   profileLookupId: string;
   userSearchResults: User[];
@@ -25,9 +27,12 @@ type ProfileScreenProps = {
 export function ProfileScreen({
   session,
   myRatings,
+  ratingSummary,
   albumDetails,
   following,
   followers,
+  followingTotal,
+  followersTotal,
   userCache,
   profileLookupId,
   userSearchResults,
@@ -40,16 +45,6 @@ export function ProfileScreen({
   onOpenRatedAlbum,
   onOpenUserProfile,
 }: ProfileScreenProps) {
-  const reviewCount = myRatings.filter((rating) => rating.review?.trim()).length;
-  const averageRating = myRatings.length > 0
-    ? myRatings.reduce((total, rating) => total + (rating.rating ?? rating.ratingValue ?? 0), 0) / myRatings.length
-    : 0;
-
-  useEffect(() => {
-    onRefreshRatings();
-    onRefreshSocial();
-  }, []);
-
   return (
     <section className="profile-grid">
       <div className="profile-sidebar-column">
@@ -59,10 +54,10 @@ export function ProfileScreen({
           <h2>{session.user.name}</h2>
           <p>{session.user.email}</p>
           <div className="social-stats">
-            <span><strong>{myRatings.length}</strong> albuns</span>
-            <span><strong>{reviewCount}</strong> reviews</span>
-            <span><strong>{averageRating ? averageRating.toFixed(1) : '-'}</strong> media</span>
-            <span><strong>{followers.length}</strong> seguidores</span>
+            <span><strong>{ratingSummary.totalRatings}</strong> albuns</span>
+            <span><strong>{ratingSummary.reviewCount}</strong> reviews</span>
+            <span><strong>{ratingSummary.averageRating ? ratingSummary.averageRating.toFixed(1) : '-'}</strong> media</span>
+            <span><strong>{followersTotal}</strong> seguidores</span>
           </div>
           <div className="profile-actions">
             <button className="button primary" onClick={onEditProfile}>
@@ -114,9 +109,13 @@ export function ProfileScreen({
           ratings={myRatings}
           albumDetails={albumDetails}
           emptyText="Voce ainda nao avaliou nenhum album."
-          limit={8}
           onOpenRatedAlbum={onOpenRatedAlbum}
         />
+        {ratingSummary.totalRatings > myRatings.length && (
+          <div className="rating-list-limit">
+            <span>Exibindo {myRatings.length} de {ratingSummary.totalRatings} albuns avaliados.</span>
+          </div>
+        )}
       </article>
 
       <article className="content-card glass-panel profile-network-card">
@@ -132,9 +131,9 @@ export function ProfileScreen({
         </div>
         <div className="social-columns">
           <div className="profile-summary-strip">
-            <span><Disc3 size={14} /> {following.length} seguindo</span>
-            <span><Star size={14} /> {followers.length} seguidores</span>
-            <span><MessageSquareText size={14} /> {reviewCount} reviews</span>
+            <span><Disc3 size={14} /> {followingTotal} seguindo</span>
+            <span><Star size={14} /> {followersTotal} seguidores</span>
+            <span><MessageSquareText size={14} /> {ratingSummary.reviewCount} reviews</span>
           </div>
           <SocialList
             title="Seguindo"

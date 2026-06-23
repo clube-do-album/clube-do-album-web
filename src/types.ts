@@ -73,6 +73,12 @@ export type Rating = {
   updatedAt?: string;
 };
 
+export type UserRatingSummary = {
+  totalRatings: number;
+  reviewCount: number;
+  averageRating: number;
+};
+
 export type FeedItem = {
   id: string;
   type?: 'ALBUM_RATED' | 'USER_FOLLOWED';
@@ -94,6 +100,15 @@ export type Follow = {
   followerId: string;
   followedId: string;
   createdAt: string;
+};
+
+export type PaginatedResponse<T> = {
+  items: T[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+  hasNextPage: boolean;
 };
 
 export type AlbumPage = {

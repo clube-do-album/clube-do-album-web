@@ -8,11 +8,10 @@ type MainLayoutProps = ChildrenProps & {
   session: Session;
   status: string;
   onLogout: () => void;
-  onLoadProfile: () => void;
   onDismissStatus: () => void;
 };
 
-export function MainLayout({ session, status, children, onLogout, onLoadProfile, onDismissStatus }: MainLayoutProps) {
+export function MainLayout({ session, status, children, onLogout, onDismissStatus }: MainLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -33,7 +32,7 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
             }}
           >
             <img className="brand-disc" src={albumDiscLogo} alt="" aria-hidden="true" />
-            Clube do Album
+            Clube do Álbum
           </button>
           <button className="drawer-close" onClick={closeMenu} aria-label="Fechar menu">
             <X size={18} />
@@ -49,7 +48,6 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
             icon={<UserRound size={18} />}
             label="Perfil"
             onClick={() => {
-              onLoadProfile();
               closeMenu();
             }}
           />
@@ -78,13 +76,13 @@ export function MainLayout({ session, status, children, onLogout, onLoadProfile,
             </button>
             <button className="topbar-brand" onClick={() => navigate('/')}>
               <img className="brand-disc" src={albumDiscLogo} alt="" aria-hidden="true" />
-              <strong>Clube do Album</strong>
+              <strong>Clube do Álbum</strong>
             </button>
             <nav className="topbar-nav" aria-label="Navegacao principal">
               <TopbarLink to="/ranking" label="Ranking" />
               <TopbarLink to="/feed" label="Feed" />
               <TopbarLink to="/people" label="Pessoas" />
-              <TopbarLink to="/profile" label="Perfil" onClick={onLoadProfile} />
+              <TopbarLink to="/profile" label="Perfil" />
             </nav>
           </div>
           <div className="topbar-actions">

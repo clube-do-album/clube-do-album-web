@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight, Flame, Search, SlidersHorizontal } from 'lucide-react';
 import type { CSSProperties, PointerEvent } from 'react';
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useRef } from 'react';
 import { AlbumPoster } from '../../features/albums/components/AlbumPoster';
 import { RankedPoster } from '../../features/rankings/components/RankedPoster';
 import { mergeAlbumDetails, rankingToAlbumPage, formatRating } from '../../features/albums/services/albumMappers';
@@ -13,9 +13,15 @@ type HomeScreenProps = {
   searchResults: SearchAlbum[];
   topAlbums: Ranking[];
   catalogAlbums: AlbumDetails[];
+  catalogPage: number;
+  catalogTotal: number;
+  catalogTotalPages: number;
+  catalogFilter: string;
   albumDetails: Record<string, AlbumDetails>;
   onQueryChange: (value: string) => void;
   onSearch: SubmitHandler;
+  onCatalogPageChange: (page: number) => void;
+  onCatalogFilterChange: (value: string) => void;
   onOpenAlbum: (album: AlbumPage) => void;
   onOpenSearchAlbum: (album: SearchAlbum) => void;
 };
@@ -27,43 +33,27 @@ export function HomeScreen({
   searchResults,
   topAlbums,
   catalogAlbums,
+  catalogPage,
+  catalogTotal,
+  catalogTotalPages,
+  catalogFilter,
   albumDetails,
   onQueryChange,
   onSearch,
+  onCatalogPageChange,
+  onCatalogFilterChange,
   onOpenAlbum,
   onOpenSearchAlbum,
 }: HomeScreenProps) {
-  const [albumPage, setAlbumPage] = useState(1);
-  const [catalogFilter, setCatalogFilter] = useState('');
   const carouselRef = useRef<HTMLDivElement | null>(null);
   const isCarouselDragging = useRef(false);
-  const hasCarouselMoved = useRef(false);
   const dragStartX = useRef(0);
   const dragStartScrollLeft = useRef(0);
-  const albumsPerPage = 12;
+  const carouselTargetScroll = useRef(0);
+  const carouselAnimationFrame = useRef<number | null>(null);
   const safeCatalogAlbums = useMemo(() => Array.isArray(catalogAlbums) ? catalogAlbums : [], [catalogAlbums]);
   const safeSearchResults = useMemo(() => Array.isArray(searchResults) ? searchResults : [], [searchResults]);
   const safeTopAlbums = useMemo(() => Array.isArray(topAlbums) ? topAlbums : [], [topAlbums]);
-  const filteredCatalogAlbums = useMemo(() => {
-    const filter = catalogFilter.trim().toLowerCase();
-
-    if (!filter) {
-      return safeCatalogAlbums;
-    }
-
-    return safeCatalogAlbums.filter((album) => {
-      const albumName = `${album.albumName ?? ''} ${album.name ?? ''}`.toLowerCase();
-      const artists = Array.isArray(album.artists) ? album.artists : [];
-      const artistName = `${album.artistName ?? ''} ${artists.map((artist) => artist.name).join(' ')}`.toLowerCase();
-
-      return albumName.includes(filter) || artistName.includes(filter);
-    });
-  }, [safeCatalogAlbums, catalogFilter]);
-  const totalPages = Math.max(1, Math.ceil(filteredCatalogAlbums.length / albumsPerPage));
-  const paginatedAlbums = useMemo(
-    () => filteredCatalogAlbums.slice((albumPage - 1) * albumsPerPage, albumPage * albumsPerPage),
-    [albumPage, filteredCatalogAlbums],
-  );
   const heroStyle = heroAlbum?.imageUrl
     ? ({ '--hero-image': `url("${heroAlbum.imageUrl}")` } as CSSProperties)
     : undefined;
@@ -101,10 +91,9 @@ export function HomeScreen({
     }
 
     isCarouselDragging.current = true;
-    hasCarouselMoved.current = false;
     dragStartX.current = event.clientX;
     dragStartScrollLeft.current = carousel.scrollLeft;
-    carousel.setPointerCapture(event.pointerId);
+    carouselTargetScroll.current = carousel.scrollLeft;
   }
 
   function moveCarouselDrag(event: PointerEvent<HTMLDivElement>) {
@@ -117,31 +106,27 @@ export function HomeScreen({
     const delta = event.clientX - dragStartX.current;
 
     if (Math.abs(delta) > 4) {
-      hasCarouselMoved.current = true;
       carousel.classList.add('dragging');
       event.preventDefault();
     }
 
-    carousel.scrollLeft = dragStartScrollLeft.current - delta;
+    carouselTargetScroll.current = dragStartScrollLeft.current - delta;
+    scheduleCarouselFrame();
   }
 
-  function stopCarouselDrag(event: PointerEvent<HTMLDivElement>) {
+  function stopCarouselDrag() {
     const carousel = carouselRef.current;
-
-    if (carousel?.hasPointerCapture(event.pointerId)) {
-      carousel.releasePointerCapture(event.pointerId);
-    }
 
     isCarouselDragging.current = false;
     carousel?.classList.remove('dragging');
 
-    window.setTimeout(() => {
-      hasCarouselMoved.current = false;
-    }, 0);
+    if (carousel) {
+      snapCarouselToClosestItem(carousel);
+    }
   }
 
-  function openRankedAlbum(item: Ranking) {
-    if (hasCarouselMoved.current) {
+  function openRankedAlbum(item: Ranking, event: PointerEvent<HTMLButtonElement>) {
+    if (Math.abs(event.clientX - dragStartX.current) > 6) {
       return;
     }
 
@@ -154,6 +139,50 @@ export function HomeScreen({
         <span>{message}</span>
       </div>
     );
+  }
+
+  function scheduleCarouselFrame() {
+    if (carouselAnimationFrame.current !== null) {
+      return;
+    }
+
+    carouselAnimationFrame.current = window.requestAnimationFrame(() => {
+      const carousel = carouselRef.current;
+      carouselAnimationFrame.current = null;
+
+      if (!carousel) {
+        return;
+      }
+
+      const distance = carouselTargetScroll.current - carousel.scrollLeft;
+      carousel.scrollLeft += distance * 0.38;
+
+      if (isCarouselDragging.current && Math.abs(distance) > 0.5) {
+        scheduleCarouselFrame();
+      } else if (isCarouselDragging.current) {
+        carousel.scrollLeft = carouselTargetScroll.current;
+      }
+    });
+  }
+
+  function snapCarouselToClosestItem(carousel: HTMLDivElement) {
+    const items = Array.from(carousel.children) as HTMLElement[];
+
+    if (items.length === 0) {
+      return;
+    }
+
+    const closestItem = items.reduce((closest, item) => {
+      const closestDistance = Math.abs(closest.offsetLeft - carousel.scrollLeft);
+      const itemDistance = Math.abs(item.offsetLeft - carousel.scrollLeft);
+
+      return itemDistance < closestDistance ? item : closest;
+    }, items[0]);
+
+    carousel.scrollTo({
+      left: closestItem.offsetLeft,
+      behavior: 'smooth',
+    });
   }
 
   return (
@@ -170,7 +199,7 @@ export function HomeScreen({
           <input
             value={query}
             onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Busque por album ou artista"
+            placeholder="Busque por um álbum"
           />
           <button className="button primary" disabled={loading}>
             Buscar
@@ -213,7 +242,7 @@ export function HomeScreen({
                   key={item.albumId}
                   item={item}
                   details={albumDetails[item.albumId]}
-                  onOpen={() => openRankedAlbum(item)}
+                  onOpen={(event) => openRankedAlbum(item, event)}
                 />
               ))
             : renderEmptyState('Os destaques aparecem aqui quando houver albuns avaliados.')}
@@ -241,23 +270,20 @@ export function HomeScreen({
         <div className="section-heading catalog-heading">
           <div>
             <h2>Todos os albuns</h2>
-            <span className="muted-text">{filteredCatalogAlbums.length} album(ns)</span>
+            <span className="muted-text">{catalogTotal} album(ns)</span>
           </div>
           <label className="catalog-filter">
             <SlidersHorizontal size={16} />
             <input
               value={catalogFilter}
-              onChange={(event) => {
-                setCatalogFilter(event.target.value);
-                setAlbumPage(1);
-              }}
+              onChange={(event) => onCatalogFilterChange(event.target.value)}
               placeholder="Filtrar por album ou artista"
             />
           </label>
         </div>
         <div className="poster-grid catalog-grid">
-          {paginatedAlbums.length > 0
-            ? paginatedAlbums.map((album) => (
+          {safeCatalogAlbums.length > 0
+            ? safeCatalogAlbums.map((album) => (
                 <AlbumPoster
                   key={album.id}
                   title={album.albumName ?? album.name ?? 'Album'}
@@ -272,17 +298,17 @@ export function HomeScreen({
             : renderEmptyState('Nenhum album importado encontrado.')}
         </div>
         <div className="pagination-bar">
-          <button className="button ghost" onClick={() => setAlbumPage((page) => Math.max(1, page - 1))} disabled={albumPage === 1}>
+          <button className="button ghost" onClick={() => onCatalogPageChange(Math.max(1, catalogPage - 1))} disabled={catalogPage === 1}>
             <ChevronLeft size={16} />
             Anterior
           </button>
           <span>
-            Pagina {albumPage} de {totalPages}
+            Pagina {catalogPage} de {catalogTotalPages}
           </span>
           <button
             className="button ghost"
-            onClick={() => setAlbumPage((page) => Math.min(totalPages, page + 1))}
-            disabled={albumPage === totalPages}
+            onClick={() => onCatalogPageChange(Math.min(catalogTotalPages, catalogPage + 1))}
+            disabled={catalogPage === catalogTotalPages}
           >
             Proxima
             <ChevronRight size={16} />

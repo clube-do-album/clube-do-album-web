@@ -1,6 +1,6 @@
 import { apiRequest } from '../../../services/api/apiClient';
-import type { Ranking } from '../../../types';
+import type { PaginatedResponse, Ranking } from '../../../types';
 
-export function listRankings(limit = 24) {
-  return apiRequest<Ranking[]>(`/rankings?limit=${limit}`);
+export function listRankings({ page = 1, limit = 24 } = {}) {
+  return apiRequest<PaginatedResponse<Ranking> | Ranking[]>(`/rankings?page=${page}&limit=${limit}`);
 }

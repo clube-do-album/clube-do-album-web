@@ -17,7 +17,7 @@ export function LandingPage({ onAuthModeChange }: LandingPageProps) {
     <main className="landing-screen">
       <header className="landing-header">
         <button className="landing-brand" onClick={() => openAuth('login')}>
-          Clube do Album
+          Clube do Álbum
         </button>
         <nav className="landing-nav" aria-label="Apresentacao">
           <button onClick={() => openAuth('login')}>Entrar</button>
@@ -48,7 +48,7 @@ export function LandingPage({ onAuthModeChange }: LandingPageProps) {
       </section>
 
       <aside className="landing-caption">
-        Clube do Album
+        Clube do Álbum
         <span>diario, ranking e comunidade</span>
       </aside>
     </main>

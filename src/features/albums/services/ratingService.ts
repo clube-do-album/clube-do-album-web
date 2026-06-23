@@ -1,5 +1,5 @@
 import { apiRequest } from '../../../services/api/apiClient';
-import type { Rating } from '../../../types';
+import type { PaginatedResponse, Rating, UserRatingSummary } from '../../../types';
 
 type SaveRatingPayload = {
   albumId: string;
@@ -7,16 +7,20 @@ type SaveRatingPayload = {
   review?: string | null;
 };
 
-export function listRatingsByUser(userId: string, accessToken: string) {
-  return apiRequest<Rating[]>(`/ratings/users/${userId}`, {}, accessToken);
+export function listRatingsByUser(userId: string, accessToken: string, { page = 1, limit = 15 } = {}) {
+  return apiRequest<PaginatedResponse<Rating> | Rating[]>(`/ratings/users/${userId}?page=${page}&limit=${limit}`, {}, accessToken);
 }
 
-export function listPublicRatingsByUser(userId: string) {
-  return apiRequest<Rating[]>(`/ratings/users/${userId}/public`);
+export function getRatingSummaryByUser(userId: string, accessToken: string) {
+  return apiRequest<UserRatingSummary>(`/ratings/users/${userId}/summary`, {}, accessToken);
 }
 
-export function listRatingsByAlbum(albumId: string) {
-  return apiRequest<Rating[]>(`/ratings/albums/${albumId}`);
+export function listPublicRatingsByUser(userId: string, { page = 1, limit = 15 } = {}) {
+  return apiRequest<PaginatedResponse<Rating> | Rating[]>(`/ratings/users/${userId}/public?page=${page}&limit=${limit}`);
+}
+
+export function listRatingsByAlbum(albumId: string, { page = 1, limit = 20 } = {}) {
+  return apiRequest<PaginatedResponse<Rating> | Rating[]>(`/ratings/albums/${albumId}?page=${page}&limit=${limit}`);
 }
 
 export function saveRating(payload: SaveRatingPayload, accessToken: string) {

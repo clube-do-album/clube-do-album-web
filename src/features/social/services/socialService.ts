@@ -1,16 +1,16 @@
 import { apiRequest } from '../../../services/api/apiClient';
-import type { FeedItem, Follow } from '../../../types';
+import type { FeedItem, Follow, PaginatedResponse } from '../../../types';
 
-export function listFeed(limit = 24) {
-  return apiRequest<FeedItem[]>(`/feed?limit=${limit}`);
+export function listFeed({ page = 1, limit = 24, type = 'ALBUM_RATED' } = {}) {
+  return apiRequest<PaginatedResponse<FeedItem> | FeedItem[]>(`/feed?page=${page}&limit=${limit}&type=${type}`);
 }
 
-export function listFollowing(accessToken: string) {
-  return apiRequest<Follow[]>('/follows/following', {}, accessToken);
+export function listFollowing(accessToken: string, { page = 1, limit = 24 } = {}) {
+  return apiRequest<PaginatedResponse<Follow> | Follow[]>(`/follows/following?page=${page}&limit=${limit}`, {}, accessToken);
 }
 
-export function listFollowers(accessToken: string) {
-  return apiRequest<Follow[]>('/follows/followers', {}, accessToken);
+export function listFollowers(accessToken: string, { page = 1, limit = 24 } = {}) {
+  return apiRequest<PaginatedResponse<Follow> | Follow[]>(`/follows/followers?page=${page}&limit=${limit}`, {}, accessToken);
 }
 
 export function followUserById(userId: string, accessToken: string) {
