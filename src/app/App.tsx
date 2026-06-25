@@ -5,13 +5,14 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { getAlbumById, getAlbumsByIds, importAlbumFromSpotify, listAlbums, searchAlbumsByName } from '../features/albums/services/albumService';
 import { getRatingSummaryByUser, listPublicRatingsByUser, listRatingsByAlbum, listRatingsByUser, saveRating } from '../features/albums/services/ratingService';
 import { listRankings } from '../features/rankings/services/rankingService';
+import { getUnreadNotificationCount, listNotifications, markAllNotificationsAsRead, markNotificationAsRead } from '../features/notifications/services/notificationService';
 import { followUserById, listFeed, listFollowers, listFollowing, unfollowUserById } from '../features/social/services/socialService';
 import { readSession, saveStoredSession, clearStoredSession } from '../features/users/services/sessionStorage';
 import { createUser, getUserById as fetchUserById, getUsersByIds, login, searchUsersByQuery } from '../features/users/services/userService';
 import { mergeAlbumDetails, searchAlbumToPage } from '../features/albums/services/albumMappers';
 import { useConfirmDialog } from '../hooks/useConfirmDialog';
 import { usePageRevalidation } from '../hooks/usePageRevalidation';
-import type { AlbumDetails, AlbumPage, AuthMode, FeedItem, Follow, PaginatedResponse, Rating, Ranking, SearchAlbum, Session, User, UserRatingSummary } from '../types';
+import type { AlbumDetails, AlbumPage, AuthMode, FeedItem, Follow, NotificationItem, PaginatedResponse, Rating, Ranking, SearchAlbum, Session, User, UserRatingSummary } from '../types';
 
 export default function App() {
   const navigate = useNavigate();
@@ -42,6 +43,8 @@ export default function App() {
   const [publicUserRatings, setPublicUserRatings] = useState<Rating[]>([]);
   const [following, setFollowing] = useState<Follow[]>([]);
   const [followers, setFollowers] = useState<Follow[]>([]);
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const [followingTotal, setFollowingTotal] = useState(0);
   const [followersTotal, setFollowersTotal] = useState(0);
   const [userCache, setUserCache] = useState<Record<string, User>>({});
@@ -62,6 +65,7 @@ export default function App() {
   useEffect(() => {
     if (session) {
       cacheUsers([session.user]);
+      void loadNotifications(session);
     }
   }, [session]);
 
@@ -252,6 +256,53 @@ export default function App() {
     });
     setFeed(safeResult);
     await Promise.allSettled([hydrateFeedAlbums(safeResult), hydrateFeedUsers(safeResult)]);
+  }
+
+  async function loadNotifications(currentSession = session) {
+    if (!currentSession) {
+      return;
+    }
+
+    try {
+      const [items, count] = await Promise.all([
+        listNotifications(currentSession.accessToken, { limit: 12 }),
+        getUnreadNotificationCount(currentSession.accessToken),
+      ]);
+
+      setNotifications(Array.isArray(items) ? items : []);
+      setUnreadNotifications(count.unread ?? 0);
+    } catch {
+      setNotifications([]);
+      setUnreadNotifications(0);
+    }
+  }
+
+  async function readNotification(notification: NotificationItem) {
+    if (!session) {
+      return;
+    }
+
+    if (!notification.readAt) {
+      await markNotificationAsRead(notification.id, session.accessToken);
+      await loadNotifications(session);
+    }
+
+    if (notification.albumId) {
+      openAlbum({
+        albumId: notification.albumId,
+        title: 'Album',
+        artist: 'Artista',
+      });
+    }
+  }
+
+  async function readAllNotifications() {
+    if (!session) {
+      return;
+    }
+
+    await markAllNotificationsAsRead(session.accessToken);
+    await loadNotifications(session);
   }
 
   async function hydrateFeedAlbums(items: FeedItem[]) {
@@ -549,7 +600,13 @@ export default function App() {
         session.accessToken,
       );
       setStatus('Avaliacao salva.');
-      await Promise.allSettled([loadRanking(), loadFeed(), loadMyRatings(), loadAlbumReviews(selectedAlbum.albumId)]);
+      await Promise.allSettled([
+        loadRanking(),
+        loadFeed(),
+        loadMyRatings(),
+        loadAlbumReviews(selectedAlbum.albumId),
+        loadNotifications(),
+      ]);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Nao foi possivel avaliar.');
     } finally {
@@ -636,7 +693,7 @@ export default function App() {
 
     try {
       await followUserById(user.id, session.accessToken);
-      await loadSocialData();
+      await Promise.allSettled([loadSocialData(), loadNotifications()]);
       setStatus(`Voce esta seguindo ${user.name}.`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Nao foi possivel seguir o usuario.');
@@ -668,7 +725,7 @@ export default function App() {
 
     try {
       await unfollowUserById(user.id, session.accessToken);
-      await loadSocialData();
+      await Promise.allSettled([loadSocialData(), loadNotifications()]);
       setStatus(`Voce deixou de seguir ${user.name}.`);
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Nao foi possivel deixar de seguir.');
@@ -715,6 +772,8 @@ export default function App() {
       userSearchResults={userSearchResults}
       viewedUser={viewedUser}
       publicUserRatings={publicUserRatings}
+      notifications={notifications}
+      unreadNotifications={unreadNotifications}
       onAuthModeChange={setAuthMode}
       onNameChange={setAuthName}
       onEmailChange={setAuthEmail}
@@ -722,6 +781,9 @@ export default function App() {
       onAuthSubmit={handleAuth}
       onLogout={logout}
       onDismissStatus={() => setStatus('')}
+      onRefreshNotifications={() => void loadNotifications()}
+      onReadNotification={(notification) => void readNotification(notification)}
+      onReadAllNotifications={() => void readAllNotifications()}
       onLoadMyRatings={() => void loadMyRatings()}
       onQueryChange={setQuery}
       onSearchAlbums={searchAlbums}

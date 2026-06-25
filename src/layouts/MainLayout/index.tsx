@@ -1,23 +1,42 @@
-import { Activity, BarChart3, ChevronRight, Home, LogOut, Menu, Search, UsersRound, UserRound, X } from 'lucide-react';
+import { Activity, BarChart3, Bell, CheckCheck, ChevronRight, Home, LogOut, Menu, Search, UsersRound, UserRound, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import albumDiscLogo from '../../assets/clubepng.png';
-import type { ChildrenProps, Session } from '../../types';
+import type { ChildrenProps, NotificationItem, Session } from '../../types';
 
 type MainLayoutProps = ChildrenProps & {
   session: Session;
   status: string;
+  notifications: NotificationItem[];
+  unreadNotifications: number;
   onLogout: () => void;
   onDismissStatus: () => void;
+  onRefreshNotifications: () => void;
+  onReadNotification: (notification: NotificationItem) => void;
+  onReadAllNotifications: () => void;
 };
 
-export function MainLayout({ session, status, children, onLogout, onDismissStatus }: MainLayoutProps) {
+export function MainLayout({
+  session,
+  status,
+  notifications,
+  unreadNotifications,
+  children,
+  onLogout,
+  onDismissStatus,
+  onRefreshNotifications,
+  onReadNotification,
+  onReadAllNotifications,
+}: MainLayoutProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isHeaderNotificationsOpen, setIsHeaderNotificationsOpen] = useState(false);
+  const [isDrawerNotificationsOpen, setIsDrawerNotificationsOpen] = useState(false);
 
   function closeMenu() {
     setIsMenuOpen(false);
+    setIsDrawerNotificationsOpen(false);
   }
 
   return (
@@ -52,6 +71,33 @@ export function MainLayout({ session, status, children, onLogout, onDismissStatu
             }}
           />
         </nav>
+        <button
+          className={`nav-button drawer-notification-button ${isDrawerNotificationsOpen ? 'active' : ''}`}
+          onClick={() => {
+            setIsDrawerNotificationsOpen((current) => !current);
+            setIsHeaderNotificationsOpen(false);
+            onRefreshNotifications();
+          }}
+        >
+          <Bell size={18} />
+          <span>Notificacoes</span>
+          {unreadNotifications > 0 && (
+            <strong className="notification-count">{unreadNotifications > 9 ? '9+' : unreadNotifications}</strong>
+          )}
+        </button>
+        {isDrawerNotificationsOpen && (
+          <NotificationPanel
+            variant="drawer"
+            notifications={notifications}
+            unreadNotifications={unreadNotifications}
+            onReadAllNotifications={onReadAllNotifications}
+            onReadNotification={(notification) => {
+              onReadNotification(notification);
+              setIsDrawerNotificationsOpen(false);
+              closeMenu();
+            }}
+          />
+        )}
         <div className="drawer-divider" />
         <nav>
           <RouteButton to="/" end icon={<Search size={18} />} label="Explorar albuns" onClick={closeMenu} />
@@ -87,6 +133,31 @@ export function MainLayout({ session, status, children, onLogout, onDismissStatu
           </div>
           <div className="topbar-actions">
             <span className="page-kicker">{routeTitle(location.pathname)}</span>
+            <div className="notification-menu">
+              <button
+                className="notification-trigger"
+                onClick={() => {
+                  setIsHeaderNotificationsOpen((current) => !current);
+                  setIsDrawerNotificationsOpen(false);
+                  onRefreshNotifications();
+                }}
+                aria-label="Abrir notificacoes"
+              >
+                <Bell size={17} />
+                {unreadNotifications > 0 && <span>{unreadNotifications > 9 ? '9+' : unreadNotifications}</span>}
+              </button>
+              {isHeaderNotificationsOpen && (
+                <NotificationPanel
+                  notifications={notifications}
+                  unreadNotifications={unreadNotifications}
+                  onReadAllNotifications={onReadAllNotifications}
+                  onReadNotification={(notification) => {
+                    onReadNotification(notification);
+                    setIsHeaderNotificationsOpen(false);
+                  }}
+                />
+              )}
+            </div>
             <button className="avatar-button" onClick={() => navigate('/profile')}>
               <UserRound size={15} />
               {session.user.name}
@@ -107,6 +178,47 @@ export function MainLayout({ session, status, children, onLogout, onDismissStatu
         </div>
       )}
     </main>
+  );
+}
+
+function NotificationPanel({
+  variant = 'popover',
+  notifications,
+  unreadNotifications,
+  onReadNotification,
+  onReadAllNotifications,
+}: {
+  variant?: 'popover' | 'drawer';
+  notifications: NotificationItem[];
+  unreadNotifications: number;
+  onReadNotification: (notification: NotificationItem) => void;
+  onReadAllNotifications: () => void;
+}) {
+  return (
+    <section className={`notification-popover notification-popover-${variant}`}>
+      <div className="notification-popover-header">
+        <strong>Notificacoes</strong>
+        <button onClick={onReadAllNotifications} disabled={unreadNotifications === 0}>
+          <CheckCheck size={14} />
+          Ler todas
+        </button>
+      </div>
+      <div className="notification-list">
+        {notifications.length > 0 ? notifications.map((notification) => (
+          <button
+            className={`notification-item ${notification.readAt ? '' : 'unread'}`}
+            key={notification.id}
+            onClick={() => onReadNotification(notification)}
+          >
+            <strong>{cleanNotificationText(notification.title)}</strong>
+            <span>{cleanNotificationText(notification.message)}</span>
+            <small>{formatNotificationDate(notification.createdAt ?? notification.occurredAt)}</small>
+          </button>
+        )) : (
+          <p className="notification-empty">Nenhuma notificacao por enquanto.</p>
+        )}
+      </div>
+    </section>
   );
 }
 
@@ -165,4 +277,29 @@ function routeTitle(pathname: string) {
   }
 
   return 'Inicio';
+}
+
+function formatNotificationDate(value?: string) {
+  if (!value) {
+    return 'agora';
+  }
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'agora';
+  }
+
+  return new Intl.DateTimeFormat('pt-BR', {
+    day: '2-digit',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
+function cleanNotificationText(value: string) {
+  const withoutUuid = value.replace(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi, 'item');
+
+  return withoutUuid.replace(/[0-9a-f]{8}\.\.\./gi, 'item');
 }

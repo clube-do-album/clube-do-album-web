@@ -103,6 +103,22 @@ export type Follow = {
   createdAt: string;
 };
 
+export type NotificationType = 'ALBUM_RATED' | 'USER_FOLLOWED' | 'RANKING_UPDATED';
+
+export type NotificationItem = {
+  id: string;
+  type: NotificationType;
+  recipientUserId: string;
+  actorUserId?: string | null;
+  albumId?: string | null;
+  title: string;
+  message: string;
+  metadata?: Record<string, unknown> | null;
+  occurredAt: string;
+  readAt?: string | null;
+  createdAt: string;
+};
+
 export type PaginatedResponse<T> = {
   items: T[];
   page: number;

@@ -21,6 +21,7 @@ import type {
   AuthMode,
   FeedItem,
   Follow,
+  NotificationItem,
   Rating,
   Ranking,
   SearchAlbum,
@@ -66,6 +67,8 @@ type AppRoutesProps = {
   userSearchResults: User[];
   viewedUser: User | null;
   publicUserRatings: Rating[];
+  notifications: NotificationItem[];
+  unreadNotifications: number;
   onAuthModeChange: (value: AuthMode) => void;
   onNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
@@ -73,6 +76,9 @@ type AppRoutesProps = {
   onAuthSubmit: SubmitHandler;
   onLogout: () => void;
   onDismissStatus: () => void;
+  onRefreshNotifications: () => void;
+  onReadNotification: (notification: NotificationItem) => void;
+  onReadAllNotifications: () => void;
   onLoadMyRatings: () => void;
   onQueryChange: (value: string) => void;
   onSearchAlbums: SubmitHandler;
@@ -165,8 +171,13 @@ export function AppRoutes(props: AppRoutesProps) {
     <MainLayout
       session={props.session}
       status={props.status}
+      notifications={props.notifications}
+      unreadNotifications={props.unreadNotifications}
       onLogout={props.onLogout}
       onDismissStatus={props.onDismissStatus}
+      onRefreshNotifications={props.onRefreshNotifications}
+      onReadNotification={props.onReadNotification}
+      onReadAllNotifications={props.onReadAllNotifications}
     >
       {location.pathname === '/' ? homeElement : (
       <Routes>

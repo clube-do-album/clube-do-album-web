@@ -938,6 +938,38 @@ label {
   margin-top: auto;
 }
 
+.drawer-notification-button {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  margin-top: 4px;
+  text-align: left;
+}
+
+.drawer-notification-button span {
+  min-width: 0;
+  flex: 0 1 auto;
+  text-align: left;
+}
+
+.drawer-notification-button .notification-count {
+  margin-left: auto;
+}
+
+.notification-count {
+  display: inline-grid;
+  min-width: 18px;
+  height: 18px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--gold);
+  color: #090c10;
+  font-size: 0.64rem;
+  font-weight: 950;
+  line-height: 1;
+}
+
 .drawer-divider {
   height: 1px;
   margin: 6px 0;
@@ -1095,6 +1127,164 @@ label {
 
 .avatar-button svg {
   color: var(--muted);
+}
+
+.notification-menu {
+  position: relative;
+}
+
+.notification-trigger {
+  position: relative;
+  display: inline-grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #c9d1d9;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.16s ease, transform 0.16s ease;
+}
+
+.notification-trigger:hover {
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.notification-trigger span {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  min-width: 18px;
+  height: 18px;
+  border: 1px solid rgba(0, 0, 0, 0.45);
+  border-radius: 999px;
+  background: var(--gold);
+  color: #090c10;
+  font-size: 0.62rem;
+  font-weight: 900;
+  line-height: 17px;
+  text-align: center;
+}
+
+.notification-popover {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 60;
+  width: min(360px, calc(100vw - 28px));
+  overflow: hidden;
+  border: 1px solid rgba(201, 209, 217, 0.14);
+  border-radius: 7px;
+  background: rgba(13, 17, 23, 0.98);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(18px);
+}
+
+.notification-popover-drawer {
+  position: static;
+  width: 100%;
+  max-height: none;
+  margin: 4px 0 8px;
+  border-color: rgba(201, 209, 217, 0.08);
+  border-radius: 6px;
+  background: rgba(13, 17, 23, 0.72);
+  box-shadow: none;
+}
+
+.notification-popover-drawer .notification-list {
+  max-height: 270px;
+}
+
+.notification-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(201, 209, 217, 0.1);
+  padding: 12px 12px 10px;
+}
+
+.notification-popover-header strong {
+  color: #ffffff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.notification-popover-header button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--gold);
+  cursor: pointer;
+  font-size: 0.72rem;
+  font-weight: 850;
+}
+
+.notification-popover-header button:disabled {
+  color: var(--muted);
+  cursor: default;
+  opacity: 0.58;
+}
+
+.notification-list {
+  display: grid;
+  max-height: 390px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  border: 0;
+  border-bottom: 1px solid rgba(201, 209, 217, 0.08);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 12px;
+  text-align: left;
+}
+
+.notification-item:hover {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.notification-item.unread {
+  background: linear-gradient(90deg, rgba(238, 194, 87, 0.12), rgba(255, 255, 255, 0.02));
+}
+
+.notification-item strong {
+  color: #ffffff;
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.notification-item span {
+  color: #b6c2d0;
+  font-size: 0.78rem;
+  line-height: 1.38;
+}
+
+.notification-item small {
+  color: #7d8c9d;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.notification-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  padding: 18px 12px;
 }
 
 .main-area > :not(.topbar) {
@@ -4326,7 +4516,20 @@ label {
   }
 
   .topbar-actions {
+    display: flex;
+    flex: 0 0 auto;
+    gap: 8px;
+  }
+
+  .topbar-actions .page-kicker,
+  .topbar-actions .avatar-button {
     display: none;
+  }
+
+  .notification-popover {
+    position: fixed;
+    top: 62px;
+    right: 12px;
   }
 
   .main-area > :not(.topbar) {
