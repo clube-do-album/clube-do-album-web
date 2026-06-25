@@ -1630,8 +1630,9 @@ label {
   scroll-snap-type: x proximity;
   scrollbar-width: none;
   cursor: grab;
-  touch-action: pan-y;
+  touch-action: pan-x;
   user-select: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 .album-carousel > * {
@@ -4061,6 +4062,10 @@ label {
     gap: 8px;
     margin-inline: -2px;
     padding-bottom: 10px;
+    cursor: default;
+    scroll-behavior: auto;
+    scroll-snap-type: x proximity;
+    touch-action: pan-x;
   }
 
   .ranked-poster {
@@ -4530,6 +4535,26 @@ label {
     position: fixed;
     top: 62px;
     right: 12px;
+    left: 12px;
+    width: auto;
+    max-height: calc(100svh - 82px);
+  }
+
+  .notification-popover:not(.notification-popover-drawer) .notification-list {
+    max-height: calc(100svh - 150px);
+  }
+
+  .notification-popover-drawer {
+    position: static;
+    top: auto;
+    right: auto;
+    left: auto;
+    width: 100%;
+    max-height: none;
+  }
+
+  .notification-popover-drawer .notification-list {
+    max-height: 240px;
   }
 
   .main-area > :not(.topbar) {

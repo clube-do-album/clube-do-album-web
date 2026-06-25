@@ -51,6 +51,8 @@ export function HomeScreen({
   const dragStartScrollLeft = useRef(0);
   const carouselTargetScroll = useRef(0);
   const carouselAnimationFrame = useRef<number | null>(null);
+  const carouselPointerType = useRef<string>('');
+  const didCarouselDrag = useRef(false);
   const safeCatalogAlbums = useMemo(() => Array.isArray(catalogAlbums) ? catalogAlbums : [], [catalogAlbums]);
   const safeSearchResults = useMemo(() => Array.isArray(searchResults) ? searchResults : [], [searchResults]);
   const safeTopAlbums = useMemo(() => Array.isArray(topAlbums) ? topAlbums : [], [topAlbums]);
@@ -90,20 +92,35 @@ export function HomeScreen({
       return;
     }
 
-    isCarouselDragging.current = true;
+    carouselPointerType.current = event.pointerType;
+    didCarouselDrag.current = false;
     dragStartX.current = event.clientX;
     dragStartScrollLeft.current = carousel.scrollLeft;
     carouselTargetScroll.current = carousel.scrollLeft;
+
+    if (event.pointerType === 'touch') {
+      return;
+    }
+
+    isCarouselDragging.current = true;
   }
 
   function moveCarouselDrag(event: PointerEvent<HTMLDivElement>) {
     const carousel = carouselRef.current;
 
-    if (!carousel || !isCarouselDragging.current) {
+    if (!carousel) {
       return;
     }
 
     const delta = event.clientX - dragStartX.current;
+
+    if (Math.abs(delta) > 8) {
+      didCarouselDrag.current = true;
+    }
+
+    if (!isCarouselDragging.current || event.pointerType === 'touch') {
+      return;
+    }
 
     if (Math.abs(delta) > 4) {
       carousel.classList.add('dragging');
@@ -120,13 +137,13 @@ export function HomeScreen({
     isCarouselDragging.current = false;
     carousel?.classList.remove('dragging');
 
-    if (carousel) {
+    if (carousel && carouselPointerType.current !== 'touch') {
       snapCarouselToClosestItem(carousel);
     }
   }
 
   function openRankedAlbum(item: Ranking, event: PointerEvent<HTMLButtonElement>) {
-    if (Math.abs(event.clientX - dragStartX.current) > 6) {
+    if (didCarouselDrag.current || Math.abs(event.clientX - dragStartX.current) > 10) {
       return;
     }
 
