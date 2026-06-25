@@ -46,6 +46,7 @@ export type AlbumTrack = {
   id?: string;
   spotifyId?: string;
   name: string;
+  discNumber?: number;
   trackNumber?: number;
   durationMs?: number;
   explicit?: boolean;

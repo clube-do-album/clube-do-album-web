@@ -72,17 +72,27 @@ export default function App() {
       return;
     }
 
-    const currentRating = myRatings.find((rating) => rating.albumId === selectedAlbum.albumId);
+    void loadAlbumReviews(selectedAlbum.albumId);
+  }, [selectedAlbum?.albumId]);
+
+  useEffect(() => {
+    if (!selectedAlbum?.albumId || !session) {
+      return;
+    }
+
+    const currentRating =
+      myRatings.find((rating) => rating.albumId === selectedAlbum.albumId) ??
+      albumReviews.find((rating) => rating.albumId === selectedAlbum.albumId && rating.userId === session.user.id);
+
     if (currentRating) {
       setRatingValue(currentRating.rating ?? currentRating.ratingValue ?? 0);
       setReviewText(currentRating.review ?? '');
-    } else {
-      setRatingValue(0);
-      setReviewText('');
+      return;
     }
 
-    void loadAlbumReviews(selectedAlbum.albumId);
-  }, [myRatings, selectedAlbum?.albumId]);
+    setRatingValue(0);
+    setReviewText('');
+  }, [albumReviews, myRatings, selectedAlbum?.albumId, session?.user.id]);
 
   async function refreshPublicData() {
     await Promise.allSettled([loadRanking(), loadFeed(), loadCatalogAlbums()]);

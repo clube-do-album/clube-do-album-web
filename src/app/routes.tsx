@@ -416,7 +416,15 @@ function AlbumRoute({
   const location = useLocation();
   const { albumId } = useParams();
   const routeAlbum = (location.state as { album?: AlbumPage } | null)?.album;
-  const album = selectedAlbum ?? routeAlbum;
+  const selectedAlbumMatchesRoute = Boolean(
+    selectedAlbum &&
+      (!albumId || selectedAlbum.albumId === albumId || selectedAlbum.spotifyId === albumId || selectedAlbum.title === albumId),
+  );
+  const routeAlbumMatchesRoute = Boolean(
+    routeAlbum &&
+      (!albumId || routeAlbum.albumId === albumId || routeAlbum.spotifyId === albumId || routeAlbum.title === albumId),
+  );
+  const album = selectedAlbumMatchesRoute ? selectedAlbum : routeAlbumMatchesRoute ? routeAlbum : null;
 
   useEffect(() => {
     const currentAlbum = album ?? routeAlbum;

@@ -1914,6 +1914,25 @@ label {
   list-style: none;
 }
 
+.album-track-groups {
+  display: grid;
+  gap: 10px;
+}
+
+.album-disc-group {
+  display: grid;
+  gap: 0;
+}
+
+.album-disc-title {
+  margin: 12px 0 2px;
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
 .album-track-row {
   display: grid;
   grid-template-columns: 26px minmax(0, 1fr) 54px;

@@ -54,6 +54,37 @@ function formatTrackDuration(durationMs?: number) {
   return `${minutes}:${seconds}`;
 }
 
+function getTrackDiscNumber(track: NonNullable<AlbumPage['tracks']>[number]) {
+  return track.discNumber && track.discNumber > 0 ? track.discNumber : 1;
+}
+
+function groupTracksByDisc(tracks: NonNullable<AlbumPage['tracks']>) {
+  let inferredDiscNumber = 1;
+  let previousTrackNumber = 0;
+
+  return tracks.reduce<Array<{ discNumber: number; tracks: typeof tracks }>>((groups, track) => {
+    const explicitDiscNumber = track.discNumber && track.discNumber > 0 ? track.discNumber : undefined;
+    const trackNumber = track.trackNumber ?? previousTrackNumber + 1;
+
+    if (!explicitDiscNumber && previousTrackNumber > 0 && trackNumber <= previousTrackNumber) {
+      inferredDiscNumber += 1;
+    }
+
+    const discNumber = explicitDiscNumber ?? inferredDiscNumber;
+    const group = groups.find((item) => item.discNumber === discNumber);
+
+    if (group) {
+      group.tracks.push(track);
+    } else {
+      groups.push({ discNumber, tracks: [track] });
+    }
+
+    previousTrackNumber = trackNumber;
+
+    return groups;
+  }, []);
+}
+
 export function AlbumScreen({
   album,
   currentUserId,
@@ -76,8 +107,24 @@ export function AlbumScreen({
   const visibleReviews = reviews.filter((review) => review.review?.trim());
   const ratingCount = album.totalRatings ?? reviews.length;
   const reviewCount = visibleReviews.length;
-  const averageRating = formatRating(album.averageRating);
-  const tracks = [...(album.tracks ?? [])].sort((first, second) => (first.trackNumber ?? 0) - (second.trackNumber ?? 0));
+  const reviewAverage = reviews.length > 0
+    ? reviews.reduce((total, review) => total + (review.rating ?? review.ratingValue ?? 0), 0) / reviews.length
+    : 0;
+  const averageRating = formatRating(album.averageRating ?? reviewAverage);
+  const hasExplicitDiscNumbers = (album.tracks ?? []).some((track) => track.discNumber && track.discNumber > 0);
+  const tracks = hasExplicitDiscNumbers
+    ? [...(album.tracks ?? [])].sort((first, second) => {
+      const discDiff = getTrackDiscNumber(first) - getTrackDiscNumber(second);
+
+      if (discDiff !== 0) {
+        return discDiff;
+      }
+
+      return (first.trackNumber ?? 0) - (second.trackNumber ?? 0);
+    })
+    : [...(album.tracks ?? [])];
+  const trackGroups = groupTracksByDisc(tracks);
+  const hasMultipleDiscs = trackGroups.length > 1;
   const distributionRows = [5, 4, 3, 2, 1].map((stars) => {
     const count = reviews.filter((review) => Math.ceil(review.rating ?? review.ratingValue ?? 0) === stars).length;
     const width = reviews.length > 0 ? Math.max(3, Math.round((count / reviews.length) * 100)) : 0;
@@ -168,21 +215,28 @@ export function AlbumScreen({
             </span>
           </div>
           {tracks.length > 0 ? (
-            <ol className="album-track-list">
-              {tracks.map((track, index) => (
-                <li className="album-track-row" key={track.id ?? track.spotifyId ?? `${track.name}-${index}`}>
-                  <span className="album-track-number">{track.trackNumber ?? index + 1}</span>
-                  <div className="album-track-main">
-                    <strong>{track.name}</strong>
-                    <small>
-                      {album.artist}
-                      {track.explicit && <em>E</em>}
-                    </small>
-                  </div>
-                  <span className="album-track-duration">{formatTrackDuration(track.durationMs)}</span>
-                </li>
+            <div className="album-track-groups">
+              {trackGroups.map((group) => (
+                <section className="album-disc-group" key={group.discNumber}>
+                  {hasMultipleDiscs && <h3 className="album-disc-title">Disco {group.discNumber}</h3>}
+                  <ol className="album-track-list">
+                    {group.tracks.map((track, index) => (
+                      <li className="album-track-row" key={track.id ?? track.spotifyId ?? `${group.discNumber}-${track.name}-${index}`}>
+                        <span className="album-track-number">{track.trackNumber ?? index + 1}</span>
+                        <div className="album-track-main">
+                          <strong>{track.name}</strong>
+                          <small>
+                            {album.artist}
+                            {track.explicit && <em>E</em>}
+                          </small>
+                        </div>
+                        <span className="album-track-duration">{formatTrackDuration(track.durationMs)}</span>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
               ))}
-            </ol>
+            </div>
           ) : (
             <div className="album-empty-review album-tracks-empty">
               <Music2 size={18} />
