@@ -6,10 +6,10 @@ export function NotFoundPage() {
   return (
     <section className="content-card narrow-card glass-panel">
       <p className="eyebrow">404</p>
-      <h2>Pagina nao encontrada</h2>
-      <p className="muted-text">A rota acessada nao existe no Clube do Album.</p>
+      <h2>Página não encontrada</h2>
+      <p className="muted-text">A rota acessada não existe no Clube do Álbum.</p>
       <button className="button primary" onClick={() => navigate('/')}>
-        Voltar ao inicio
+        Voltar ao início
       </button>
     </section>
   );

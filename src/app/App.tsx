@@ -188,7 +188,7 @@ export default function App() {
   function logout() {
     confirmDialog.confirm({
       title: 'Sair da conta?',
-      message: 'Sua sessao local sera encerrada e voce precisara fazer login novamente.',
+      message: 'Sua sessão local será encerrada e você precisará fazer login novamente.',
       confirmLabel: 'Sair',
       onConfirm: executeLogout,
     });
@@ -210,7 +210,7 @@ export default function App() {
       setAuthPassword('');
       setStatus(authMode === 'register' ? 'Conta criada.' : 'Bem-vindo de volta.');
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Nao foi possivel autenticar.');
+      setStatus(error instanceof Error ? error.message : 'Não foi possível autenticar.');
     } finally {
       setLoading(false);
     }
@@ -290,7 +290,7 @@ export default function App() {
     if (notification.albumId) {
       openAlbum({
         albumId: notification.albumId,
-        title: 'Album',
+        title: 'Álbum',
         artist: 'Artista',
       });
     }
@@ -506,7 +506,7 @@ export default function App() {
       setSearchResults(safeResult);
       setStatus(`${safeResult.length} resultado(s).`);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Nao foi possivel buscar albuns.');
+      setStatus(error instanceof Error ? error.message : 'Não foi possível buscar álbuns.');
     } finally {
       setLoading(false);
     }
@@ -540,7 +540,7 @@ export default function App() {
     const spotifyId = album.spotifyId;
 
     if (!spotifyId) {
-      setStatus('Nao foi possivel localizar este album.');
+      setStatus('Não foi possível localizar este álbum.');
       return null;
     }
 
@@ -550,11 +550,11 @@ export default function App() {
     try {
       const imported = await importAlbumFromSpotify(spotifyId, session.accessToken);
       setAlbumDetails((current) => ({ ...current, [imported.id]: imported }));
-      setStatus('Album pronto.');
+      setStatus('Álbum pronto.');
       await Promise.allSettled([loadRanking(), loadCatalogAlbums()]);
       return imported;
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Nao foi possivel abrir este album.');
+      setStatus(error instanceof Error ? error.message : 'Não foi possível abrir este álbum.');
       return null;
     } finally {
       setLoading(false);
@@ -583,7 +583,7 @@ export default function App() {
     event.preventDefault();
 
     if (!session || !selectedAlbum?.albumId) {
-      setStatus('Importe o album antes de rankear.');
+      setStatus('Importe o álbum antes de rankear.');
       return;
     }
 
@@ -599,7 +599,7 @@ export default function App() {
         },
         session.accessToken,
       );
-      setStatus('Avaliacao salva.');
+      setStatus('Avaliação salva.');
       await Promise.allSettled([
         loadRanking(),
         loadFeed(),
@@ -608,7 +608,7 @@ export default function App() {
         loadNotifications(),
       ]);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Nao foi possivel avaliar.');
+      setStatus(error instanceof Error ? error.message : 'Não foi possível avaliar.');
     } finally {
       setLoading(false);
     }
@@ -630,9 +630,9 @@ export default function App() {
       const visibleResults = safeResult.filter((user) => user.id !== session.user.id);
       cacheUsers(safeResult);
       setUserSearchResults(visibleResults);
-      setStatus(`${visibleResults.length} usuario(s) encontrado(s).`);
+      setStatus(`${visibleResults.length} usuário(s) encontrado(s).`);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Nao foi possivel buscar usuarios.');
+      setStatus(error instanceof Error ? error.message : 'Não foi possível buscar usuários.');
     } finally {
       setLoading(false);
     }
@@ -655,7 +655,7 @@ export default function App() {
       setPeopleResults(safeResult);
       setStatus(`${safeResult.length} perfil(is) encontrado(s).`);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Nao foi possivel buscar pessoas.');
+      setStatus(error instanceof Error ? error.message : 'Não foi possível buscar pessoas.');
     } finally {
       setLoading(false);
     }
@@ -674,11 +674,11 @@ export default function App() {
     openAlbum(mergeAlbumDetails({
       albumId: rating.albumId,
       spotifyId: details?.spotifyId,
-      title: details?.albumName ?? details?.name ?? 'Album',
+      title: details?.albumName ?? details?.name ?? 'Álbum',
       artist: details?.artistName ?? 'Artista',
     }, details ?? {
       id: rating.albumId,
-      albumName: 'Album',
+      albumName: 'Álbum',
       artistName: 'Artista',
     }));
   }
@@ -694,9 +694,9 @@ export default function App() {
     try {
       await followUserById(user.id, session.accessToken);
       await Promise.allSettled([loadSocialData(), loadNotifications()]);
-      setStatus(`Voce esta seguindo ${user.name}.`);
+      setStatus(`Você está seguindo ${user.name}.`);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Nao foi possivel seguir o usuario.');
+      setStatus(error instanceof Error ? error.message : 'Não foi possível seguir o usuário.');
     } finally {
       setLoading(false);
     }
@@ -709,7 +709,7 @@ export default function App() {
 
     confirmDialog.confirm({
       title: 'Deixar de seguir?',
-      message: `Voce deixara de acompanhar as atividades de ${user.name}.`,
+      message: `Você deixará de acompanhar as atividades de ${user.name}.`,
       confirmLabel: 'Deixar de seguir',
       onConfirm: () => executeUnfollowUser(user),
     });
@@ -726,9 +726,9 @@ export default function App() {
     try {
       await unfollowUserById(user.id, session.accessToken);
       await Promise.allSettled([loadSocialData(), loadNotifications()]);
-      setStatus(`Voce deixou de seguir ${user.name}.`);
+      setStatus(`Você deixou de seguir ${user.name}.`);
     } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Nao foi possivel deixar de seguir.');
+      setStatus(error instanceof Error ? error.message : 'Não foi possível deixar de seguir.');
     } finally {
       setLoading(false);
     }

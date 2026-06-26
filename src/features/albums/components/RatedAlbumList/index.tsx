@@ -23,7 +23,7 @@ export function RatedAlbumList({ ratings, albumDetails, emptyText, limit, onOpen
       {ratings.length === 0 && <p className="muted-text">{emptyText}</p>}
       {visibleRatings.map((item) => {
         const details = albumDetails[item.albumId];
-        const title = details?.albumName ?? details?.name ?? 'Album carregando';
+        const title = details?.albumName ?? details?.name ?? 'Álbum carregando';
         const artist = details ? getAlbumArtistName(details) : 'Artista carregando';
         const date = formatRatingDate(item.updatedAt ?? item.createdAt);
 
@@ -51,7 +51,7 @@ export function RatedAlbumList({ ratings, albumDetails, emptyText, limit, onOpen
       })}
       {hiddenCount > 0 && (
         <div className="rating-list-limit">
-          <span>Exibindo {visibleRatings.length} de {ratings.length} albuns avaliados.</span>
+          <span>Exibindo {visibleRatings.length} de {ratings.length} álbuns avaliados.</span>
           <button type="button" onClick={() => setIsExpanded(true)}>
             Ver mais
           </button>
@@ -59,7 +59,7 @@ export function RatedAlbumList({ ratings, albumDetails, emptyText, limit, onOpen
       )}
       {isExpanded && typeof limit === 'number' && ratings.length > limit && (
         <div className="rating-list-limit">
-          <span>Exibindo todos os {ratings.length} albuns avaliados.</span>
+          <span>Exibindo todos os {ratings.length} álbuns avaliados.</span>
           <button type="button" onClick={() => setIsExpanded(false)}>
             Ver menos
           </button>

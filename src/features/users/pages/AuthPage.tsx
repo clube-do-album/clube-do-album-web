@@ -35,11 +35,11 @@ export function AuthScreen({
     <main className="auth-screen">
       <section className="auth-copy">
         <p className="eyebrow">Clube do Álbum</p>
-        <h1>Seu diario de albuns, notas e descobertas.</h1>
+        <h1>Seu diário de álbuns, notas e descobertas.</h1>
         <div className="auth-stats">
           <span>Ranking vivo</span>
           <span>Feed social</span>
-          <span>Catalogo musical</span>
+          <span>Catálogo musical</span>
         </div>
       </section>
 

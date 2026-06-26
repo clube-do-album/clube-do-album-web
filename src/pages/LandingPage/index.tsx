@@ -19,19 +19,19 @@ export function LandingPage({ onAuthModeChange }: LandingPageProps) {
         <button className="landing-brand" onClick={() => openAuth('login')}>
           Clube do Álbum
         </button>
-        <nav className="landing-nav" aria-label="Apresentacao">
+        <nav className="landing-nav" aria-label="Apresentação">
           <button onClick={() => openAuth('login')}>Entrar</button>
           <button onClick={() => openAuth('register')}>Criar conta</button>
-          <button onClick={() => openAuth('login')}>Albuns</button>
+          <button onClick={() => openAuth('login')}>Álbuns</button>
           <button onClick={() => openAuth('login')}>Ranking</button>
           <button onClick={() => openAuth('login')}>Feed</button>
         </nav>
       </header>
 
       <section className="landing-hero">
-        <p className="eyebrow">Ranking social de musica</p>
+        <p className="eyebrow">Ranking social de música</p>
         <h1>
-          Registre os albuns que voce ouviu.
+          Registre os álbuns que você ouviu.
           <br />
           Guarde os favoritos.
           <br />
@@ -42,14 +42,14 @@ export function LandingPage({ onAuthModeChange }: LandingPageProps) {
             Criar minha conta
           </button>
           <button className="button ghost" onClick={() => openAuth('login')}>
-            Ja tenho conta
+            Já tenho conta
           </button>
         </div>
       </section>
 
       <aside className="landing-caption">
         Clube do Álbum
-        <span>diario, ranking e comunidade</span>
+        <span>diário, ranking e comunidade</span>
       </aside>
     </main>
   );

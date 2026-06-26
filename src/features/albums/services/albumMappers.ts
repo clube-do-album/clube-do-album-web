@@ -4,14 +4,14 @@ export function getAlbumArtistName(album?: Pick<AlbumDetails, 'artistName' | 'ar
   const artists = Array.isArray(album?.artists) ? album.artists : [];
   const artistNames = artists.map((artist) => artist.name).filter(Boolean).join(', ');
 
-  return album?.artistName || artistNames || 'Artista nao informado';
+  return album?.artistName || artistNames || 'Artista não informado';
 }
 
 export function searchAlbumToPage(album: SearchAlbum): AlbumPage {
   return {
     albumId: album.id,
     spotifyId: album.spotifyId ?? album.id,
-    title: album.albumName ?? album.name ?? 'Album sem nome',
+    title: album.albumName ?? album.name ?? 'Álbum sem nome',
     artist: album.artistName ?? 'Artista desconhecido',
     imageUrl: album.imageUrl,
     releaseDate: album.releaseDate,

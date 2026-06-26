@@ -68,7 +68,7 @@ export function HomeScreen({
       return album.artistName;
     }
 
-    return artistsName || 'Artista nao informado';
+    return artistsName || 'Artista não informado';
   }
 
   function openCatalogAlbum(album: AlbumDetails) {
@@ -77,7 +77,7 @@ export function HomeScreen({
     onOpenAlbum(mergeAlbumDetails({
       albumId: album.id,
       spotifyId: album.spotifyId,
-      title: album.albumName ?? album.name ?? 'Album',
+      title: album.albumName ?? album.name ?? 'Álbum',
       artist: artistName,
     }, {
       ...album,
@@ -208,7 +208,7 @@ export function HomeScreen({
         <div className="section-heading search-heading">
           <div>
             <span className="eyebrow">Descoberta</span>
-            <h2>Descobrir albuns</h2>
+            <h2>Descobrir álbuns</h2>
           </div>
           <Search size={20} />
         </div>
@@ -226,11 +226,11 @@ export function HomeScreen({
           {safeSearchResults.slice(0, 8).map((album) => (
             <AlbumPoster
               key={album.spotifyId ?? album.id ?? album.name}
-              title={album.albumName ?? album.name ?? 'Album'}
+              title={album.albumName ?? album.name ?? 'Álbum'}
               artist={album.artistName ?? 'Artista'}
               imageUrl={album.imageUrl}
               meta={album.releaseDate ?? `${album.totalTracks ?? 0} faixas`}
-              actionLabel="Ver album"
+              actionLabel="Ver álbum"
               onOpen={() => onOpenSearchAlbum(album)}
               onAction={() => onOpenSearchAlbum(album)}
             />
@@ -241,12 +241,12 @@ export function HomeScreen({
 
       <article className="wide-panel glass-panel">
         <div className="section-heading">
-          <h2>Principais albuns</h2>
+          <h2>Principais álbuns</h2>
           <Flame size={20} />
         </div>
         <div
           className="album-carousel"
-          aria-label="Principais albuns rankeados"
+          aria-label="Principais álbuns ranqueados"
           ref={carouselRef}
           onPointerCancel={stopCarouselDrag}
           onPointerDown={startCarouselDrag}
@@ -262,39 +262,39 @@ export function HomeScreen({
                   onOpen={(event) => openRankedAlbum(item, event)}
                 />
               ))
-            : renderEmptyState('Os destaques aparecem aqui quando houver albuns avaliados.')}
+            : renderEmptyState('Os destaques aparecem aqui quando houver álbuns avaliados.')}
         </div>
       </article>
 
       <article className={`hero-panel ${heroAlbum?.imageUrl ? 'has-cover' : ''}`} style={heroStyle}>
         <div>
           <p className="eyebrow">Em alta na plataforma</p>
-          <h2>{heroAlbum?.title ?? 'Busque seu primeiro album.'}</h2>
+          <h2>{heroAlbum?.title ?? 'Busque seu primeiro álbum.'}</h2>
           <p>{heroAlbum?.artist ?? 'Depois de avaliar, o ranking e o feed começam a ganhar vida.'}</p>
           {heroAlbum && (
             <button className="button primary" onClick={() => onOpenAlbum(heroAlbum)}>
-              Ver album
+              Ver álbum
             </button>
           )}
         </div>
         <div className="score-orbit">
           <strong>{heroAlbum ? formatRating(heroAlbum.averageRating) : '0.00'}</strong>
-          <span>media</span>
+          <span>média</span>
         </div>
       </article>
 
       <article className="wide-panel glass-panel">
         <div className="section-heading catalog-heading">
           <div>
-            <h2>Todos os albuns</h2>
-            <span className="muted-text">{catalogTotal} album(ns)</span>
+            <h2>Todos os álbuns</h2>
+            <span className="muted-text">{catalogTotal} álbum(ns)</span>
           </div>
           <label className="catalog-filter">
             <SlidersHorizontal size={16} />
             <input
               value={catalogFilter}
               onChange={(event) => onCatalogFilterChange(event.target.value)}
-              placeholder="Filtrar por album ou artista"
+              placeholder="Filtrar por álbum ou artista"
             />
           </label>
         </div>
@@ -303,16 +303,16 @@ export function HomeScreen({
             ? safeCatalogAlbums.map((album) => (
                 <AlbumPoster
                   key={album.id}
-                  title={album.albumName ?? album.name ?? 'Album'}
+                  title={album.albumName ?? album.name ?? 'Álbum'}
                   artist={getAlbumArtistName(album)}
                   imageUrl={album.imageUrl}
                   meta={album.releaseDate ?? `${album.totalTracks ?? 0} faixas`}
-                  actionLabel="Ver album"
+                  actionLabel="Ver álbum"
                   onOpen={() => openCatalogAlbum(album)}
                   onAction={() => openCatalogAlbum(album)}
                 />
               ))
-            : renderEmptyState('Nenhum album importado encontrado.')}
+            : renderEmptyState('Nenhum álbum importado encontrado.')}
         </div>
         <div className="pagination-bar">
           <button className="button ghost" onClick={() => onCatalogPageChange(Math.max(1, catalogPage - 1))} disabled={catalogPage === 1}>
@@ -320,14 +320,14 @@ export function HomeScreen({
             Anterior
           </button>
           <span>
-            Pagina {catalogPage} de {catalogTotalPages}
+            Página {catalogPage} de {catalogTotalPages}
           </span>
           <button
             className="button ghost"
             onClick={() => onCatalogPageChange(Math.min(catalogTotalPages, catalogPage + 1))}
             disabled={catalogPage === catalogTotalPages}
           >
-            Proxima
+            Próxima
             <ChevronRight size={16} />
           </button>
         </div>

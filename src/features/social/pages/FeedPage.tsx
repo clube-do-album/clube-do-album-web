@@ -33,8 +33,8 @@ export function FeedScreen({ feed, albumDetails, userCache, onRefresh, onOpenAlb
           safeFeed.map((item) => {
             const actor = userCache[item.userId];
             const details = item.albumId ? albumDetails[item.albumId] : undefined;
-            const albumTitle = details?.albumName ?? details?.name ?? item.albumName ?? 'Album avaliado';
-            const artistName = details ? getAlbumArtistName(details) : item.artistName ?? 'Artista nao informado';
+            const albumTitle = details?.albumName ?? details?.name ?? item.albumName ?? 'Álbum avaliado';
+            const artistName = details ? getAlbumArtistName(details) : item.artistName ?? 'Artista não informado';
 
             return (
               <article className="feed-post rating-event" key={item.id}>
@@ -91,7 +91,7 @@ export function FeedScreen({ feed, albumDetails, userCache, onRefresh, onOpenAlb
           <div className="feed-empty-state">
             <Disc3 size={18} />
             <strong>Nenhuma atividade ainda.</strong>
-            <p>Avaliacoes e reviews aparecem aqui quando a comunidade se movimenta.</p>
+            <p>Avaliações e reviews aparecem aqui quando a comunidade se movimenta.</p>
           </div>
         )}
       </div>
@@ -103,7 +103,7 @@ function toAlbumPage(details: AlbumDetails, item: FeedItem): AlbumPage {
   return {
     albumId: details.id,
     spotifyId: details.spotifyId,
-    title: details.albumName ?? details.name ?? item.albumName ?? 'Album',
+    title: details.albumName ?? details.name ?? item.albumName ?? 'Álbum',
     artist: getAlbumArtistName(details),
     imageUrl: details.imageUrl,
     releaseDate: details.releaseDate,
@@ -134,7 +134,7 @@ function formatFeedDate(value?: string) {
 
 function shortId(value?: string) {
   if (!value) {
-    return 'usuario';
+    return 'usuário';
   }
 
   return value.length > 12 ? `${value.slice(0, 8)}...` : value;

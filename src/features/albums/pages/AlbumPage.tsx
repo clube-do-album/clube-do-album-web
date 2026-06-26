@@ -150,23 +150,23 @@ export function AlbumScreen({
         <div className="album-main-row">
           <AlbumCover className="album-cover-large" imageUrl={album.imageUrl} title={album.title} />
           <div className="album-info">
-            <p className="eyebrow">{album.position ? `#${album.position} no ranking` : canRate ? 'Disponivel na plataforma' : 'Preparando album'}</p>
+            <p className="eyebrow">{album.position ? `#${album.position} no ranking` : canRate ? 'Disponível na plataforma' : 'Preparando álbum'}</p>
             <h2>{album.title}</h2>
             <p className="album-artist">{album.releaseDate ? `${album.releaseDate.slice(0, 4)} • ` : ''}{album.artist}</p>
             <div className="album-meta-line">
               <span>
                 <CalendarDays size={15} />
-                {album.releaseDate ?? 'Lancamento nao informado'}
+                {album.releaseDate ?? 'Lançamento não informado'}
               </span>
               <span>
                 <Music2 size={15} />
-                {album.totalTracks ? `${album.totalTracks} faixas` : 'Faixas nao informadas'}
+                {album.totalTracks ? `${album.totalTracks} faixas` : 'Faixas não informadas'}
               </span>
             </div>
             <div className="album-actions">
               {!canRate && (
                 <button className="button secondary" onClick={onImport} disabled={loading || !album.spotifyId}>
-                  Preparar avaliacao
+                  Preparar avaliação
                 </button>
               )}
             </div>
@@ -176,16 +176,16 @@ export function AlbumScreen({
               <span>
                 <Star size={16} />
                 <strong>{averageRating}</strong>
-                media
+                média
               </span>
               <span>
                 <UsersRound size={16} />
                 <strong>{ratingCount}</strong>
-                avaliacoes
+                avaliações
               </span>
             </div>
-            <div className="rating-snapshot" aria-label="Distribuicao de notas">
-              <span className="rating-snapshot-title">Distribuicao das avaliacoes</span>
+            <div className="rating-snapshot" aria-label="Distribuição de notas">
+              <span className="rating-snapshot-title">Distribuição das avaliações</span>
               <div className="rating-distribution-list">
                 {distributionRows.map((item) => (
                   <div className="rating-distribution-row" key={item.stars}>
@@ -200,7 +200,7 @@ export function AlbumScreen({
             </div>
             <button className="button primary album-rate-trigger" onClick={() => setIsRatingModalOpen(true)} disabled={!canRate || loading}>
               <Star size={17} />
-              Avaliar album
+              Avaliar álbum
             </button>
           </aside>
         </div>
@@ -240,8 +240,8 @@ export function AlbumScreen({
           ) : (
             <div className="album-empty-review album-tracks-empty">
               <Music2 size={18} />
-              <p>As faixas deste album ainda nao foram carregadas.</p>
-              <span>Quando o album for importado com detalhes completos, elas aparecem aqui.</span>
+              <p>As faixas deste álbum ainda não foram carregadas.</p>
+              <span>Quando o álbum for importado com detalhes completos, elas aparecem aqui.</span>
             </div>
           )}
         </div>
@@ -260,7 +260,7 @@ export function AlbumScreen({
               <div className="review-list">
                 {visibleReviews.map((review) => {
                   const author = userCache[review.userId];
-                  const authorName = review.userId === currentUserId ? 'Sua review' : author?.name ?? `Usuario ${review.userId.slice(0, 8)}`;
+                  const authorName = review.userId === currentUserId ? 'Sua review' : author?.name ?? `Usuário ${review.userId.slice(0, 8)}`;
                   const reviewRating = formatRating(review.rating ?? review.ratingValue);
 
                   return (
@@ -281,8 +281,8 @@ export function AlbumScreen({
             ) : (
               <div className="album-empty-review">
                 <Sparkles size={18} />
-                <p>Nenhuma review escrita para este album ainda.</p>
-                <span>Seja a primeira pessoa a registrar uma impressao mais completa.</span>
+                <p>Nenhuma review escrita para este álbum ainda.</p>
+                <span>Seja a primeira pessoa a registrar uma impressão mais completa.</span>
               </div>
             )}
           </div>
@@ -297,7 +297,7 @@ export function AlbumScreen({
             aria-labelledby="rating-modal-title"
             onMouseDown={(event) => event.stopPropagation()}
           >
-            <button className="rating-modal-close" onClick={() => setIsRatingModalOpen(false)} aria-label="Fechar avaliacao">
+            <button className="rating-modal-close" onClick={() => setIsRatingModalOpen(false)} aria-label="Fechar avaliação">
               <X size={18} />
             </button>
             <form className="rating-form rating-panel rating-modal-form" onSubmit={handleRatingSubmit}>
@@ -305,7 +305,7 @@ export function AlbumScreen({
                 <AlbumCover className="rating-modal-cover" imageUrl={album.imageUrl} title={album.title} />
                 <div className="rating-modal-main">
                   <div className="rating-modal-album">
-                    <span className="eyebrow">Avaliar album</span>
+                    <span className="eyebrow">Avaliar álbum</span>
                     <h3 id="rating-modal-title">{album.title}</h3>
                     <p>{album.artist}</p>
                     {album.releaseDate && (
@@ -320,7 +320,7 @@ export function AlbumScreen({
 
                   <div className="rating-header">
                     <div>
-                      <span className="eyebrow">Sua avaliacao</span>
+                      <span className="eyebrow">Sua avaliação</span>
                       <strong>{ratingLabel}</strong>
                     </div>
                     <Star size={24} />
@@ -365,13 +365,13 @@ export function AlbumScreen({
                 <textarea
                   value={reviewText}
                   maxLength={1000}
-                  placeholder="Escreva o que esse album te fez sentir, lembrar ou pensar."
+                  placeholder="Escreva o que esse álbum te fez sentir, lembrar ou pensar."
                   onChange={(event) => onReviewChange(event.target.value)}
                   disabled={!canRate || loading}
                 />
               </label>
               <div className="rating-modal-footer">
-                <span>Sua avaliacao ajuda outros fas a descobrir bons albuns.</span>
+                <span>Sua avaliação ajuda outros fãs a descobrir bons álbuns.</span>
                 <button className="button primary rating-save-button" disabled={loading || !canRate || ratingValue <= 0}>
                   Salvar
                 </button>

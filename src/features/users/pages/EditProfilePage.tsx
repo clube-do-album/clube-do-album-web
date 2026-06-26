@@ -25,7 +25,6 @@ export function EditProfileScreen({ session, onBack }: EditProfileScreenProps) {
         Email
         <input value={session.user.email} disabled />
       </label>
-      <p className="muted-text">A API de edicao de perfil ainda nao existe.</p>
     </section>
   );
 }

@@ -20,10 +20,10 @@ export function RankingScreen({ ranking, albumDetails, onRefresh, onOpenAlbum }:
         <div>
           <span className="eyebrow">Comunidade</span>
           <h2>Ranking geral</h2>
-          <p>Albuns mais bem avaliados pela comunidade do Clube do Album.</p>
+          <p>Álbuns mais bem avaliados pela comunidade do Clube do Álbum.</p>
         </div>
         <div className="ranking-hero-actions">
-          <span><Trophy size={16} /> {ranking.length} albuns</span>
+          <span><Trophy size={16} /> {ranking.length} álbuns</span>
           <button className="button ghost" onClick={onRefresh}>
             <RefreshCw size={16} />
             Atualizar
@@ -60,8 +60,8 @@ export function RankingScreen({ ranking, albumDetails, onRefresh, onOpenAlbum }:
         {ranking.length === 0 ? (
           <div className="feed-empty-state">
             <Trophy size={20} />
-            <strong>Nenhum album ranqueado ainda.</strong>
-            <p>O ranking aparece quando a comunidade comecar a avaliar albuns.</p>
+            <strong>Nenhum álbum ranqueado ainda.</strong>
+            <p>O ranking aparece quando a comunidade começar a avaliar álbuns.</p>
           </div>
         ) : (
           <div className="ranking-table">
@@ -79,6 +79,11 @@ export function RankingScreen({ ranking, albumDetails, onRefresh, onOpenAlbum }:
               </button>
             ))}
           </div>
+        )}
+        {ranking.length > 0 && (
+          <p className="ranking-rule-note">
+            Para entrar no ranking, o álbum precisa ter pelo menos 3 avaliações.
+          </p>
         )}
       </article>
     </section>

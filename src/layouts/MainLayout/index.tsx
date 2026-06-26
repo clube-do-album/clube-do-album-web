@@ -58,7 +58,7 @@ export function MainLayout({
           </button>
         </div>
         <nav>
-          <RouteButton to="/" end icon={<Home size={18} />} label="Inicio" onClick={closeMenu} />
+          <RouteButton to="/" end icon={<Home size={18} />} label="Início" onClick={closeMenu} />
           <RouteButton to="/ranking" icon={<BarChart3 size={18} />} label="Ranking" onClick={closeMenu} />
           <RouteButton to="/feed" icon={<Activity size={18} />} label="Feed" onClick={closeMenu} />
           <RouteButton to="/people" icon={<UsersRound size={18} />} label="Pessoas" onClick={closeMenu} />
@@ -80,7 +80,7 @@ export function MainLayout({
           }}
         >
           <Bell size={18} />
-          <span>Notificacoes</span>
+          <span>Notificações</span>
           {unreadNotifications > 0 && (
             <strong className="notification-count">{unreadNotifications > 9 ? '9+' : unreadNotifications}</strong>
           )}
@@ -100,7 +100,7 @@ export function MainLayout({
         )}
         <div className="drawer-divider" />
         <nav>
-          <RouteButton to="/" end icon={<Search size={18} />} label="Explorar albuns" onClick={closeMenu} />
+          <RouteButton to="/" end icon={<Search size={18} />} label="Explorar álbuns" onClick={closeMenu} />
         </nav>
         <div className="drawer-divider" />
         <div className="drawer-user">
@@ -124,7 +124,7 @@ export function MainLayout({
               <img className="brand-disc" src={albumDiscLogo} alt="" aria-hidden="true" />
               <strong>Clube do Álbum</strong>
             </button>
-            <nav className="topbar-nav" aria-label="Navegacao principal">
+            <nav className="topbar-nav" aria-label="Navegação principal">
               <TopbarLink to="/ranking" label="Ranking" />
               <TopbarLink to="/feed" label="Feed" />
               <TopbarLink to="/people" label="Pessoas" />
@@ -141,7 +141,7 @@ export function MainLayout({
                   setIsDrawerNotificationsOpen(false);
                   onRefreshNotifications();
                 }}
-                aria-label="Abrir notificacoes"
+                aria-label="Abrir notificações"
               >
                 <Bell size={17} />
                 {unreadNotifications > 0 && <span>{unreadNotifications > 9 ? '9+' : unreadNotifications}</span>}
@@ -197,7 +197,7 @@ function NotificationPanel({
   return (
     <section className={`notification-popover notification-popover-${variant}`}>
       <div className="notification-popover-header">
-        <strong>Notificacoes</strong>
+        <strong>Notificações</strong>
         <button onClick={onReadAllNotifications} disabled={unreadNotifications === 0}>
           <CheckCheck size={14} />
           Ler todas
@@ -215,7 +215,7 @@ function NotificationPanel({
             <small>{formatNotificationDate(notification.createdAt ?? notification.occurredAt)}</small>
           </button>
         )) : (
-          <p className="notification-empty">Nenhuma notificacao por enquanto.</p>
+          <p className="notification-empty">Nenhuma notificação por enquanto.</p>
         )}
       </div>
     </section>
@@ -253,7 +253,7 @@ function RouteButton({
 
 function routeTitle(pathname: string) {
   if (pathname.startsWith('/album')) {
-    return 'Album';
+    return 'Álbum';
   }
 
   if (pathname.startsWith('/profile/edit')) {
@@ -276,7 +276,7 @@ function routeTitle(pathname: string) {
     return 'Feed';
   }
 
-  return 'Inicio';
+  return 'Início';
 }
 
 function formatNotificationDate(value?: string) {

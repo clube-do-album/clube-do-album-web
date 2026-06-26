@@ -54,9 +54,9 @@ export function ProfileScreen({
           <h2>{session.user.name}</h2>
           <p>{session.user.email}</p>
           <div className="social-stats">
-            <span><strong>{ratingSummary.totalRatings}</strong> albuns</span>
+            <span><strong>{ratingSummary.totalRatings}</strong> álbuns</span>
             <span><strong>{ratingSummary.reviewCount}</strong> reviews</span>
-            <span><strong>{ratingSummary.averageRating ? ratingSummary.averageRating.toFixed(1) : '-'}</strong> media</span>
+            <span><strong>{ratingSummary.averageRating ? ratingSummary.averageRating.toFixed(1) : '-'}</strong> média</span>
             <span><strong>{followersTotal}</strong> seguidores</span>
           </div>
           <div className="profile-actions">
@@ -97,7 +97,7 @@ export function ProfileScreen({
       <article className="content-card glass-panel profile-ratings-card">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">Historico</span>
+            <span className="eyebrow">Histórico</span>
             <h2>Reviews e notas</h2>
           </div>
           <button className="button ghost" onClick={onRefreshRatings}>
@@ -108,12 +108,12 @@ export function ProfileScreen({
         <RatedAlbumList
           ratings={myRatings}
           albumDetails={albumDetails}
-          emptyText="Voce ainda nao avaliou nenhum album."
+          emptyText="Você ainda não avaliou nenhum álbum."
           onOpenRatedAlbum={onOpenRatedAlbum}
         />
         {ratingSummary.totalRatings > myRatings.length && (
           <div className="rating-list-limit">
-            <span>Exibindo {myRatings.length} de {ratingSummary.totalRatings} albuns avaliados.</span>
+            <span>Exibindo {myRatings.length} de {ratingSummary.totalRatings} álbuns avaliados.</span>
           </div>
         )}
       </article>
@@ -121,7 +121,7 @@ export function ProfileScreen({
       <article className="content-card glass-panel profile-network-card">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">Conexoes</span>
+            <span className="eyebrow">Conexões</span>
             <h2>Rede social</h2>
           </div>
           <button className="button ghost" onClick={onRefreshSocial}>
@@ -137,7 +137,7 @@ export function ProfileScreen({
           </div>
           <SocialList
             title="Seguindo"
-            emptyText="Voce ainda nao segue ninguem."
+            emptyText="Você ainda não segue ninguém."
             items={following}
             mode="following"
             userCache={userCache}
@@ -145,7 +145,7 @@ export function ProfileScreen({
           />
           <SocialList
             title="Seguidores"
-            emptyText="Ninguem segue voce ainda."
+            emptyText="Ninguém segue você ainda."
             items={followers}
             mode="followers"
             userCache={userCache}

@@ -56,17 +56,17 @@ function resolveApiErrorMessage(response: Response, error: ApiError | null) {
 
   switch (response.status) {
     case 400:
-      return 'Requisicao invalida. Confira os dados enviados.';
+      return 'Requisição inválida. Confira os dados enviados.';
     case 401:
-      return 'Sua sessao expirou. Entre novamente para continuar.';
+      return 'Sua sessão expirou. Entre novamente para continuar.';
     case 403:
-      return 'Voce nao tem permissao para realizar esta acao.';
+      return 'Você não tem permissão para realizar esta ação.';
     case 404:
-      return 'Nao encontramos o recurso solicitado.';
+      return 'Não encontramos o recurso solicitado.';
     case 409:
-      return 'Essa acao conflita com um dado que ja existe.';
+      return 'Essa ação conflita com um dado que já existe.';
     case 422:
-      return 'Nao foi possivel processar os dados enviados.';
+      return 'Não foi possível processar os dados enviados.';
     case 429:
       return 'Muitas tentativas em pouco tempo. Aguarde um momento e tente novamente.';
     default:
@@ -74,20 +74,20 @@ function resolveApiErrorMessage(response: Response, error: ApiError | null) {
         return 'O servidor encontrou um problema. Tente novamente em instantes.';
       }
 
-      return `Nao foi possivel concluir a requisicao. Codigo ${response.status}.`;
+      return `Não foi possível concluir a requisição. Código ${response.status}.`;
   }
 }
 
 function getNetworkErrorMessage(error: unknown) {
   if (error instanceof DOMException && error.name === 'AbortError') {
-    return 'A requisicao demorou demais para responder. Tente novamente.';
+    return 'A requisição demorou demais para responder. Tente novamente.';
   }
 
   if (error instanceof TypeError) {
-    return 'Nao foi possivel conectar ao servidor. Verifique se a API esta online.';
+    return 'Não foi possível conectar ao servidor. Verifique se a API está online.';
   }
 
-  return 'Nao foi possivel comunicar com o servidor.';
+  return 'Não foi possível comunicar com o servidor.';
 }
 
 function normalizeErrorMessage(message?: string) {

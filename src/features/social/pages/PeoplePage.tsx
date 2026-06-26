@@ -36,7 +36,7 @@ export function PeopleScreen({
         <div>
           <span className="eyebrow">Social</span>
           <h2>Pessoas</h2>
-          <p>Encontre perfis, veja avaliacoes e acompanhe quem tem gosto parecido com o seu.</p>
+          <p>Encontre perfis, veja avaliações e acompanhe quem tem gosto parecido com o seu.</p>
         </div>
         <span className="people-hero-count"><UsersRound size={16} /> {following.length} seguindo</span>
       </header>
@@ -67,7 +67,7 @@ export function PeopleScreen({
           <div className="people-empty-state">
             <UsersRound size={20} />
             <strong>Busque pessoas pelo nome.</strong>
-            <p>Os perfis encontrados aparecem aqui com a opcao de seguir ou abrir o perfil.</p>
+            <p>Os perfis encontrados aparecem aqui com a opção de seguir ou abrir o perfil.</p>
           </div>
         )}
 
@@ -89,7 +89,7 @@ export function PeopleScreen({
                 <button className="person-main" onClick={() => onOpenUserProfile(user)}>
                   <span>{user.name.slice(0, 1).toUpperCase()}</span>
                   <strong>{user.name}</strong>
-                  <small>{isOwnUser ? 'Voce' : isFollowing ? 'Seguindo' : 'Perfil publico'}</small>
+                  <small>{isOwnUser ? 'Você' : isFollowing ? 'Seguindo' : 'Perfil público'}</small>
                 </button>
 
                 <div className="person-actions">

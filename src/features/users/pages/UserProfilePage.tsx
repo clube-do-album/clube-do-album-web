@@ -43,14 +43,14 @@ export function UserProfileScreen({
       <article className="public-profile-hero glass-panel">
         <div className="public-profile-avatar"><UserRound size={34} /></div>
         <div className="public-profile-main">
-          <span className="eyebrow">Perfil publico</span>
+          <span className="eyebrow">Perfil público</span>
           <h2>{user.name}</h2>
-          <p>{isOwnProfile ? 'Este e o seu perfil publico.' : isFollowing ? 'Voce acompanha as avaliacoes deste perfil.' : 'Acompanhe este perfil para ver novas avaliacoes no feed.'}</p>
+          <p>{isOwnProfile ? 'Este é o seu perfil público.' : isFollowing ? 'Você acompanha as avaliações deste perfil.' : 'Acompanhe este perfil para ver novas avaliações no feed.'}</p>
           <div className="public-profile-meta">
-            <span><Disc3 size={14} /> <strong>{ratings.length}</strong> albuns</span>
+            <span><Disc3 size={14} /> <strong>{ratings.length}</strong> álbuns</span>
             <span><MessageSquareText size={14} /> <strong>{reviewCount}</strong> reviews</span>
-            <span><Star size={14} /> <strong>{averageRating ? averageRating.toFixed(1) : '-'}</strong> media</span>
-            <span>{isOwnProfile ? 'Seu perfil' : isFollowing ? 'Seguindo' : 'Nao seguindo'}</span>
+            <span><Star size={14} /> <strong>{averageRating ? averageRating.toFixed(1) : '-'}</strong> média</span>
+            <span>{isOwnProfile ? 'Seu perfil' : isFollowing ? 'Seguindo' : 'Não seguindo'}</span>
           </div>
         </div>
 
@@ -69,14 +69,14 @@ export function UserProfileScreen({
       <article className="content-card glass-panel public-ratings-panel">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">Colecao</span>
+            <span className="eyebrow">Coleção</span>
             <h2>Reviews e notas</h2>
           </div>
         </div>
         <RatedAlbumList
           ratings={ratings}
           albumDetails={albumDetails}
-          emptyText="Este usuario ainda nao avaliou nenhum album."
+          emptyText="Este usuário ainda não avaliou nenhum álbum."
           limit={8}
           onOpenRatedAlbum={onOpenRatedAlbum}
         />

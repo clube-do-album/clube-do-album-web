@@ -353,7 +353,7 @@ function UserProfileRoute({
       void onLoadUser(userId)
         .then(() => setLoadError(''))
         .catch((error) => {
-          setLoadError(error instanceof Error ? error.message : 'Nao foi possivel carregar este perfil.');
+          setLoadError(error instanceof Error ? error.message : 'Não foi possível carregar este perfil.');
         })
         .finally(() => setIsLoadingUser(false));
     }
@@ -369,7 +369,7 @@ function UserProfileRoute({
     return (
       <section className="content-card narrow-card glass-panel">
         <p className="muted-text">
-          {isLoadingUser ? 'Carregando perfil...' : loadError || 'Perfil nao encontrado ou ainda nao carregado.'}
+          {isLoadingUser ? 'Carregando perfil...' : loadError || 'Perfil não encontrado ou ainda não carregado.'}
         </p>
         <button className="button primary" onClick={onBack}>
           Voltar ao meu perfil
@@ -460,7 +460,7 @@ function AlbumRoute({
               {
                 albumId: details.id,
                 spotifyId: details.spotifyId,
-                title: details.albumName ?? details.name ?? 'Album',
+                title: details.albumName ?? details.name ?? 'Álbum',
                 artist: details.artistName ?? 'Artista',
               },
               details,
@@ -474,9 +474,9 @@ function AlbumRoute({
   if (!album) {
     return (
       <section className="content-card narrow-card glass-panel">
-        <p className="muted-text">Album nao encontrado ou ainda nao carregado.</p>
+        <p className="muted-text">Álbum não encontrado ou ainda não carregado.</p>
         <button className="button primary" onClick={() => navigate('/')}>
-          Voltar ao inicio
+          Voltar ao início
         </button>
       </section>
     );
